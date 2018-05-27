@@ -20,13 +20,20 @@ public class WavFile {
     
     private byte[] fileBuffer;
     private String fileName;
+    
+    // Header information
     private long fileSize;
     private int numChannels;    // 1 mono, 2 stereo
     private int sampleRate;     // 22050, 44100, 48000
     private int byteRate;       // 176400 = (Sample Rate * BitsPerSample * Channels) / 8
     private int bitType;        // (BitsPerSample * Channels) / 8 => 1:8 bit mono, 2: 8 bit stereo or 16 bit mono, 4: 16 bit stereo
     private int bitsPerSample;  // 8, 16
-    private long dataSize;      // NumSamples * NumChannels * BitsPerSample/8
+    private long dataSize;      // NumSamples * NumChannels * BytesPerSample(1 or 2)
+    
+    // other information
+    private boolean isWavFile;
+    private int bytesPerSample; // 1 or 2
+    private int numSamples;     // a sample can be mono or stereo
     
     public WavFile(File file) {
         
@@ -37,7 +44,8 @@ public class WavFile {
             Logger.getLogger(WavFile.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        if (isSupported()) {
+        isWavFile = isWavFile();
+        if (isWavFile) {
             // Read WAV Header
             fileSize = 8 + ByteHelper.getInt4(fileBuffer, 4);
             numChannels = ByteHelper.getInt2(fileBuffer, 22);
@@ -47,21 +55,31 @@ public class WavFile {
             bitsPerSample = (int) ByteHelper.getInt2(fileBuffer, 34);
             dataSize = ByteHelper.getInt4(fileBuffer, 40);
             
+            bytesPerSample = bitsPerSample / 8;
+            numSamples = (int) (dataSize / (numChannels * bytesPerSample));
+            
             System.out.println("WavFile init done");
         }
         
     }
     
-    final public boolean isSupported() {
+    private boolean isWavFile() {
         boolean isRiff = ByteHelper.equalsString(fileBuffer, 0, "RIFF");
         boolean isWave = ByteHelper.equalsString(fileBuffer, 8, "WAVE");
         boolean hasData = ByteHelper.equalsString(fileBuffer, 36, "data");
-        return isRiff && isWave && hasData;
+        return isRiff && isWave && hasData;        
+    }
+    
+    final public boolean isSupported() {
+        return isWavFile && (numChannels == 1);
+    }
+    
+    final public boolean isValid() {
+        return isWavFile;
     }
     
     public String getDisplayInfo() {
         StringBuilder builder = new StringBuilder();
-        builder.append("File: ");
         builder.append(fileName);
         builder.append("\n");
         if (numChannels == 1) {

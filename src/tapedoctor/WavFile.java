@@ -29,4 +29,9 @@ public class WavFile {
         }        
     }
     
+    public boolean isValid() {
+        boolean isRiff = ByteHelper.equalsString(fileBuffer, 0, "RIFF");
+        return isRiff;
+    }
+    
 }

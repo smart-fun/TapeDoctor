@@ -8,6 +8,7 @@ package tapedoctor;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -49,7 +50,19 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
 
     @Override
     public void onWavLoaded(WavFile wavFile) {
-        
+        if (wavFile.isValid()) {
+            
+        } else {
+            showWavNotValid();
+        }
+    }
+    
+    private void showWavNotValid() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("File Error");
+        alert.setHeaderText(null);
+        alert.setContentText("Wav File is invalid");
+        alert.showAndWait();
     }
     
 }

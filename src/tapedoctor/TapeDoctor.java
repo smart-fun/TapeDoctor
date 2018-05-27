@@ -50,18 +50,27 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
 
     @Override
     public void onWavLoaded(WavFile wavFile) {
-        if (wavFile.isValid()) {
-            
+        if (wavFile.isSupported()) {
+            showWavLoaded(wavFile);
         } else {
-            showWavNotValid();
+            showWavNotSupported();
         }
     }
     
-    private void showWavNotValid() {
+    private void showWavNotSupported() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("File Error");
         alert.setHeaderText(null);
-        alert.setContentText("Wav File is invalid");
+        alert.setContentText("Wav File is not supported");
+        alert.showAndWait();
+    }
+    
+    private void showWavLoaded(WavFile wavFile) {
+        String message = wavFile.getDisplayInfo();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("WAV Information");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
         alert.showAndWait();
     }
     

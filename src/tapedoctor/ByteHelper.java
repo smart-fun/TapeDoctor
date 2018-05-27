@@ -27,5 +27,25 @@ public class ByteHelper {
         }
         return true;
     }
+
+    public static int getInt2(byte[] buffer, int offset) {
+        return (int) getInt(buffer, offset, 2);
+    }
+        
+    public static long getInt4(byte[] buffer, int offset) {
+        return getInt(buffer, offset, 4);
+    }
+    
+    private static long getInt(byte[] buffer, int offset, int numBytes) {
+        long result = 0;
+        for(int i=0; i<numBytes; ++i) {
+            int value = buffer[offset + numBytes - 1 - i];
+            if (value < 0) {
+                value += 256;
+            }
+            result = (result << 8) + value;
+        }
+        return result;
+    }
     
 }

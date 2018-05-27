@@ -94,4 +94,15 @@ public class WavFile {
         return builder.toString();
     }
     
+    // TODO: this is 8 bits only !!
+    public double getSampleValue(int sampleNumber) {
+        if ((sampleNumber < 0) || (sampleNumber >= numSamples)) {
+            return 0;
+        }
+        byte rough = fileBuffer[sampleNumber + 44];
+        double value = (rough >= 0) ? rough : rough + 256;
+        value = value / 256;
+        return value - 0.5;
+    }
+    
 }

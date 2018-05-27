@@ -78,6 +78,10 @@ public class WavFile {
         return isWavFile;
     }
     
+    public int getNumSamples() {
+        return numSamples;
+    }
+    
     public String getDisplayInfo() {
         StringBuilder builder = new StringBuilder();
         builder.append(fileName);

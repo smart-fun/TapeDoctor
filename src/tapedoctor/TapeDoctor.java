@@ -6,8 +6,12 @@
 package tapedoctor;
 
 import javafx.application.Application;
+//import static javafx.application.Application.launch;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -21,12 +25,17 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     private VBox root;
     
+    private WavImage wavImage;
+    private double zoomValue = 0;
+    
     @Override
     public void start(Stage primaryStage) {
         
         //StackPane root = new StackPane();
         root = new VBox();
         root.getChildren().add(new Menus(primaryStage, this));
+        
+        addZoomSlider();
         
         Scene scene = new Scene(root, 640, 512);
         
@@ -76,9 +85,33 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     }
     
     private void addWavImage(WavFile wavFile) {
-        WavImage wavImage = new WavImage(640, 256, wavFile);
+        wavImage = new WavImage(640, 256, wavFile);
         root.getChildren().add(wavImage);
-        wavImage.draw();
+        wavImage.draw(zoomValue);
+    }
+    
+    private void addZoomSlider() {
+        Slider slider = new Slider();
+        slider.setMin(0);
+        slider.setMax(1);
+        slider.setValue(zoomValue);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(0.5);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(0.1);
+        root.getChildren().add(slider);
+        
+        slider.valueProperty().addListener(new ChangeListener() {
+        @Override
+            public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
+                zoomValue = (double) newValue;
+                if (wavImage != null) {
+                    wavImage.draw(zoomValue);
+                }
+            }
+        });
+
     }
     
 }

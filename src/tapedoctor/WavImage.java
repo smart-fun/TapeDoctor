@@ -23,12 +23,14 @@ public class WavImage extends Canvas {
         this.wavFile = wavFile;
     }
     
-    public void draw() {
+    public void draw(double zoomValue) {
         GraphicsContext gc = getGraphicsContext2D();
         
         double width = getWidth();
         double height = getHeight();
         double midHeight = height / 2;
+        
+        gc.beginPath();        
         
         // Background
         gc.setFill(Color.WHITE);
@@ -39,19 +41,24 @@ public class WavImage extends Canvas {
         gc.setLineWidth(1.0);
         gc.moveTo(0, midHeight);
         gc.lineTo(width, midHeight);
-        gc.stroke();
         
         gc.setStroke(Color.BLACK);
         gc.moveTo(0, midHeight);
-        int step = 100;
+        
+        double stepZoom0 = wavFile.getNumSamples() / (double)width;
+        double stepZoom100 = 1;
+        double step = (stepZoom100 * zoomValue) + (stepZoom0 * (1 - zoomValue));
         int position = 0;
         for(int x=0; x<width; ++x) {
             double value = wavFile.getSampleValue(position);
             position += step;
             double y = midHeight + (value * midHeight);
             gc.lineTo(x, y);
-            gc.stroke();
         }
+        
+        gc.stroke();
+        
+        gc.closePath();
         
     }
     

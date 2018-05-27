@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  *
  * @author aguyon
  */
-public class TapeDoctor extends Application {
+public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     public static final String version = "0.0.1";
     
@@ -30,7 +30,7 @@ public class TapeDoctor extends Application {
         
         //StackPane root = new StackPane();
         VBox root = new VBox();
-        root.getChildren().add(new Menus());
+        root.getChildren().add(new Menus(primaryStage, this));
         root.getChildren().add(btn);
         
         Scene scene = new Scene(root, 300, 250);
@@ -45,6 +45,11 @@ public class TapeDoctor extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void onWavLoaded(WavFile wavFile) {
+        
     }
     
 }

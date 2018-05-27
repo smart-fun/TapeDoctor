@@ -5,6 +5,7 @@
  */
 package tapedoctor;
 
+import java.io.File;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -12,6 +13,9 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 
 /**
  *
@@ -19,8 +23,12 @@ import javafx.scene.control.SeparatorMenuItem;
  */
 public class Menus extends MenuBar {
     
-    public Menus() {
+    final private OnMenuListener listener;
+    
+    public Menus(Stage stage, OnMenuListener listener) {
         super();
+        
+        this.listener = listener;
         
         // File Menu
         Menu fileMenu = new Menu("File");
@@ -30,6 +38,10 @@ public class Menus extends MenuBar {
             MenuItem quitItem = new MenuItem("Quit");
             fileMenu.getItems().addAll(openWavItem, separator, quitItem);
             
+            openWavItem.setOnAction((ActionEvent actionEvent) -> {
+                openWavFile(stage);
+            });
+                        
             quitItem.setOnAction((ActionEvent actionEvent) -> {
                 System.exit(0);
             });
@@ -56,4 +68,23 @@ public class Menus extends MenuBar {
         alert.setContentText("Tape Doctor v" + TapeDoctor.version + "\n© 2018 Arnaud Guyon");
         alert.showAndWait();
     }
+    
+    private void openWavFile(Stage stage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        fileChooser.getExtensionFilters().addAll(
+            new ExtensionFilter("WAV Files", "*.wav"),
+            new ExtensionFilter("All Files", "*.*"));
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            System.out.println("Wav Selected: " + selectedFile.getAbsolutePath());
+            WavFile wavFile = new WavFile(selectedFile);
+            listener.onWavLoaded(wavFile);
+        }
+    }
+    
+    public interface OnMenuListener {
+        void onWavLoaded(WavFile wavFile);
+    }
+    
 }

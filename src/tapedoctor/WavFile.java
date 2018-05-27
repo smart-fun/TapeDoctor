@@ -100,12 +100,34 @@ public class WavFile {
     
     // TODO: this is 8 bits only !!
     public double getSampleValue(int sampleNumber) {
+        if (numChannels == 1) {
+            if (bitsPerSample == 8) {
+                return getSample8bitsValue(sampleNumber);
+            } else if (bitsPerSample == 16) {
+                return getSample16bitsValue(sampleNumber);
+            }
+        }
+        return 0.5;
+    }
+    
+    public double getSample8bitsValue(int sampleNumber) {
         if ((sampleNumber < 0) || (sampleNumber >= numSamples)) {
             return 0;
         }
         byte rough = fileBuffer[sampleNumber + 44];
         double value = (rough >= 0) ? rough : rough + 256;
         value = value / 256;
+        return value - 0.5;
+    }
+
+    public double getSample16bitsValue(int sampleNumber) {
+        if ((sampleNumber < 0) || (sampleNumber >= numSamples)) {
+            return 0;
+        }
+        int offset = 44 + (sampleNumber * 2);
+        int rough = ByteHelper.getInt2(fileBuffer, offset);
+        double value = (rough >= 0) ? rough : rough + 65536;
+        value = value / 65536;
         return value - 0.5;
     }
     

@@ -27,6 +27,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     private WavImage wavImage;
     private double zoomValue = 0;
+    private double offsetValue = 0;
     
     @Override
     public void start(Stage primaryStage) {
@@ -34,8 +35,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         //StackPane root = new StackPane();
         root = new VBox();
         root.getChildren().add(new Menus(primaryStage, this));
-        
-        addZoomSlider();
         
         Scene scene = new Scene(root, 640, 512);
         
@@ -55,7 +54,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     public void onWavLoaded(WavFile wavFile) {
         if (wavFile.isSupported()) {
             showWavLoaded(wavFile);
+            addZoomSlider();
             addWavImage(wavFile);
+            addOffsetSlider();
         } else {
             showWavNotSupported(wavFile);
         }
@@ -87,7 +88,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private void addWavImage(WavFile wavFile) {
         wavImage = new WavImage(640, 256, wavFile);
         root.getChildren().add(wavImage);
-        wavImage.draw(zoomValue);
+        wavImage.draw(offsetValue, zoomValue);
     }
     
     private void addZoomSlider() {
@@ -107,7 +108,31 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
                 zoomValue = (double) newValue;
                 if (wavImage != null) {
-                    wavImage.draw(zoomValue);
+                    wavImage.draw(offsetValue, zoomValue);
+                }
+            }
+        });
+
+    }
+    
+    private void addOffsetSlider() {
+        Slider slider = new Slider();
+        slider.setMin(0);
+        slider.setMax(100);
+        slider.setValue(offsetValue);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(50);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(10);
+        root.getChildren().add(slider);
+        
+        slider.valueProperty().addListener(new ChangeListener() {
+        @Override
+            public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
+                offsetValue = (double) newValue;
+                if (wavImage != null) {
+                    wavImage.draw(offsetValue, zoomValue);
                 }
             }
         });

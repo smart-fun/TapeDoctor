@@ -6,10 +6,8 @@
 package tapedoctor;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -21,20 +19,16 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     public static final String version = "0.0.1";
     
+    private VBox root;
+    
     @Override
     public void start(Stage primaryStage) {
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction((ActionEvent event) -> {
-            System.out.println("Hello World!");
-        });
         
         //StackPane root = new StackPane();
-        VBox root = new VBox();
+        root = new VBox();
         root.getChildren().add(new Menus(primaryStage, this));
-        root.getChildren().add(btn);
         
-        Scene scene = new Scene(root, 300, 250);
+        Scene scene = new Scene(root, 640, 512);
         
         primaryStage.setTitle("Tape Doctor v" + version);
         primaryStage.setScene(scene);
@@ -52,6 +46,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     public void onWavLoaded(WavFile wavFile) {
         if (wavFile.isSupported()) {
             showWavLoaded(wavFile);
+            addWavImage(wavFile);
         } else {
             showWavNotSupported(wavFile);
         }
@@ -78,6 +73,12 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    private void addWavImage(WavFile wavFile) {
+        WavImage wavImage = new WavImage(640, 256, wavFile);
+        root.getChildren().add(wavImage);
+        wavImage.draw();
     }
     
 }

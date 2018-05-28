@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class WavFile {
     
-    private static final double PEAK_THRESHOLD = 0.02;
+    private static final double PEAK_THRESHOLD = 0.005;
     private static final double WAVE_AMPLITUDE = 0.75;
     
     private byte[] fileBuffer;
@@ -71,6 +71,7 @@ public class WavFile {
             searchPeaks();
             System.out.println("First Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
             resample();
+            //resampleDynamic();
             System.out.println("Second Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
             
             System.out.println("WavFile init done");
@@ -215,6 +216,28 @@ public class WavFile {
         double multiplier = (WAVE_AMPLITUDE / 2) / amplitude;
         for(int pos=0; pos<numSamples; ++pos) {
             double currentValue = convertedSamples[pos];
+            currentValue = currentValue * multiplier;
+            convertedSamples[pos] = currentValue;
+        }
+    }
+    
+        // resample with peaks information
+    private void resampleDynamic() {
+        double hiPeakSmooth = hiPeakAvg;
+        double loPeakSmooth = loPeakAvg;
+        for(int pos=0; pos<numSamples; ++pos) {
+
+            double currentValue = convertedSamples[pos];
+
+            if (hiPeaks.contains(pos)) {
+                hiPeakSmooth = ((hiPeakSmooth * 3) + currentValue) / 4;   // Smooth peak amplitude
+            }
+            //if (loPeaks.contains(pos)) {
+            //    loPeakSmooth = ((loPeakSmooth * 3) + currentValue) / 4;   // Smooth peak amplitude
+            //}
+
+            double amplitude = hiPeakSmooth - loPeakSmooth;
+            double multiplier = (WAVE_AMPLITUDE / 2) / amplitude;
             currentValue = currentValue * multiplier;
             convertedSamples[pos] = currentValue;
         }

@@ -34,6 +34,7 @@ public class WavFile {
     private boolean isWavFile;
     private int bytesPerSample; // 1 or 2
     private int numSamples;     // a sample can be mono or stereo
+    private double[] convertedSamples;
     
     public WavFile(File file) {
         
@@ -58,6 +59,7 @@ public class WavFile {
             bytesPerSample = bitsPerSample / 8;
             numSamples = (int) (dataSize / (numChannels * bytesPerSample));
             
+            convertSamples();
             System.out.println("WavFile init done");
         }
         
@@ -98,19 +100,11 @@ public class WavFile {
         return builder.toString();
     }
     
-    // TODO: this is 8 bits only !!
     public double getSampleValue(int sampleNumber) {
-        if (numChannels == 1) {
-            if (bitsPerSample == 8) {
-                return getSample8bitsValue(sampleNumber);
-            } else if (bitsPerSample == 16) {
-                return getSample16bitsValue(sampleNumber);
-            }
-        }
-        return 0.5;
+        return convertedSamples[sampleNumber];
     }
     
-    public double getSample8bitsValue(int sampleNumber) {
+    private double getSample8bitsValue(int sampleNumber) {
         if ((sampleNumber < 0) || (sampleNumber >= numSamples)) {
             return 0;
         }
@@ -120,7 +114,7 @@ public class WavFile {
         return value - 0.5;
     }
 
-    public double getSample16bitsValue(int sampleNumber) {
+    private double getSample16bitsValue(int sampleNumber) {
         if ((sampleNumber < 0) || (sampleNumber >= numSamples)) {
             return 0;
         }
@@ -132,6 +126,19 @@ public class WavFile {
         double value = rough;        
         value = value / 65536.0;
         return value;
+    }
+    
+    private void convertSamples() {
+        convertedSamples = new double[numSamples];
+        if (numChannels == 1) {
+            for(int pos=0; pos<numSamples; ++pos) {
+               if (bitsPerSample == 8) {
+                   convertedSamples[pos] = getSample8bitsValue(pos);
+               } else if (bitsPerSample == 16) {
+                    convertedSamples[pos] = getSample16bitsValue(pos);
+                }
+            }
+        }
     }
     
 }

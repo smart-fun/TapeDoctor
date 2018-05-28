@@ -25,7 +25,10 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     private VBox root;
     
+    private Slider zoomSlider;
+    private Slider offsetSlider;
     private WavImage wavImage;
+    
     private double zoomValue = 0;
     private double offsetValue = 0;
     
@@ -54,6 +57,18 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     public void onWavLoaded(WavFile wavFile) {
         if (wavFile.isSupported()) {
             showWavLoaded(wavFile);
+            if (zoomSlider != null) {
+                root.getChildren().remove(zoomSlider);
+                zoomSlider = null;
+            }
+            if (offsetSlider != null) {
+                root.getChildren().remove(offsetSlider);
+                offsetSlider = null;
+            }
+            if (wavImage != null) {
+                root.getChildren().remove(wavImage);
+                wavImage = null;                
+            }
             addZoomSlider();
             addWavImage(wavFile);
             addOffsetSlider();
@@ -112,7 +127,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
                 }
             }
         });
-
+        zoomSlider = slider;
     }
     
     private void addOffsetSlider() {
@@ -136,7 +151,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
                 }
             }
         });
-
+        
+        offsetSlider = slider;
     }
     
 }

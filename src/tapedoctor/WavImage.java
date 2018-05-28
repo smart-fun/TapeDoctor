@@ -59,6 +59,15 @@ public class WavImage extends Canvas {
             position += step;
             double y = midHeight - (value * height);
             gc.lineTo(x, y);
+            
+            if (wavFile.isHighPeak((int) position)) {
+                gc.lineTo(x, 0);
+                gc.moveTo(x, y);
+            } else if (wavFile.isLowPeak((int) position)) {
+                gc.lineTo(x, height);
+                gc.moveTo(x, y);
+            }
+            
         }
         
         gc.stroke();

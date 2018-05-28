@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,8 @@ public class WavFile {
     private int bytesPerSample; // 1 or 2
     private int numSamples;     // a sample can be mono or stereo
     private double[] convertedSamples;
+    private HashSet<Integer> hiPeaks = new HashSet<>();
+    private HashSet<Integer> loPeaks = new HashSet<>();
     
     public WavFile(File file) {
         
@@ -60,6 +63,7 @@ public class WavFile {
             numSamples = (int) (dataSize / (numChannels * bytesPerSample));
             
             convertSamples();
+            searchPics();
             System.out.println("WavFile init done");
         }
         
@@ -82,6 +86,13 @@ public class WavFile {
     
     public int getNumSamples() {
         return numSamples;
+    }
+    
+    public boolean isHighPeak(int position) {
+        return hiPeaks.contains(position);
+    }
+    public boolean isLowPeak(int position) {
+        return loPeaks.contains(position);
     }
     
     public String getDisplayInfo() {
@@ -136,6 +147,40 @@ public class WavFile {
                    convertedSamples[pos] = getSample8bitsValue(pos);
                } else if (bitsPerSample == 16) {
                     convertedSamples[pos] = getSample16bitsValue(pos);
+                }
+            }
+        }
+    }
+    
+    private void searchPics() {
+        int peakOffset = 0;
+        double peakValue = convertedSamples[0];
+        boolean increasing = convertedSamples[1] > convertedSamples[0];
+        for(int pos=1; pos<numSamples; ++pos) {
+            double currentValue = convertedSamples[pos];
+            if (increasing) {
+                if (currentValue > peakValue) {
+                    peakValue = currentValue;
+                    peakOffset = pos;
+                } else {
+                    if (currentValue < peakValue - 0.1) {   // End of peak, TODO: hardcoded 10%
+                        hiPeaks.add(peakOffset);
+                        increasing = false;
+                        peakOffset = pos;
+                        peakValue = currentValue;
+                    }
+                }
+            } else {    // decreasing
+                if (currentValue < peakValue) {
+                    peakValue = currentValue;
+                    peakOffset = pos;
+                } else {
+                    if (currentValue > peakValue + 0.1) {   // End of peak, TODO: hardcoded 10%
+                        loPeaks.add(peakOffset);
+                        increasing = true;
+                        peakOffset = pos;
+                        peakValue = currentValue;                        
+                    }
                 }
             }
         }

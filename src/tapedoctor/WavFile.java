@@ -126,9 +126,12 @@ public class WavFile {
         }
         int offset = 44 + (sampleNumber * 2);
         int rough = ByteHelper.getInt2(fileBuffer, offset);
-        double value = (rough >= 0) ? rough : rough + 65536;
-        value = value / 65536;
-        return value - 0.5;
+        if (rough > 32768) {
+            rough -= 65536;
+        }
+        double value = rough;        
+        value = value / 65536.0;
+        return value;
     }
     
 }

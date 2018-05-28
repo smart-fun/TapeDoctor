@@ -57,7 +57,7 @@ public class WavImage extends Canvas {
         for(int x=0; x<width; ++x) {
             double value = wavFile.getSampleValue((int) position);
             position += step;
-            double y = midHeight + (value * midHeight);
+            double y = midHeight - (value * height);
             gc.lineTo(x, y);
         }
         

@@ -19,6 +19,9 @@ import java.util.logging.Logger;
  */
 public class WavFile {
     
+    private static final double PEAK_THRESHOLD = 0.02;
+    private static final double WAVE_AMPLITUDE = 0.75;
+    
     private byte[] fileBuffer;
     private String fileName;
     
@@ -38,6 +41,8 @@ public class WavFile {
     private double[] convertedSamples;
     private HashSet<Integer> hiPeaks = new HashSet<>();
     private HashSet<Integer> loPeaks = new HashSet<>();
+    double hiPeakAvg = 0;
+    double loPeakAvg = 0;
     
     public WavFile(File file) {
         
@@ -63,7 +68,11 @@ public class WavFile {
             numSamples = (int) (dataSize / (numChannels * bytesPerSample));
             
             convertSamples();
-            searchPics();
+            searchPeaks();
+            System.out.println("First Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
+            resample();
+            System.out.println("Second Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
+            
             System.out.println("WavFile init done");
         }
         
@@ -152,7 +161,9 @@ public class WavFile {
         }
     }
     
-    private void searchPics() {
+    private void searchPeaks() {
+        hiPeaks.clear();
+        loPeaks.clear();
         int peakOffset = 0;
         double peakValue = convertedSamples[0];
         boolean increasing = convertedSamples[1] > convertedSamples[0];
@@ -163,8 +174,14 @@ public class WavFile {
                     peakValue = currentValue;
                     peakOffset = pos;
                 } else {
-                    if (currentValue < peakValue - 0.1) {   // End of peak, TODO: hardcoded 10%
+                    if (currentValue < peakValue - PEAK_THRESHOLD) {
                         hiPeaks.add(peakOffset);
+                        if (hiPeakAvg == 0) {
+                            hiPeakAvg = peakValue;
+                        } else {
+                            int numPeaks = hiPeaks.size();
+                            hiPeakAvg = ((hiPeakAvg * (numPeaks-1)) + peakValue) / numPeaks;
+                        }
                         increasing = false;
                         peakOffset = pos;
                         peakValue = currentValue;
@@ -175,14 +192,31 @@ public class WavFile {
                     peakValue = currentValue;
                     peakOffset = pos;
                 } else {
-                    if (currentValue > peakValue + 0.1) {   // End of peak, TODO: hardcoded 10%
+                    if (currentValue > peakValue + PEAK_THRESHOLD) {
                         loPeaks.add(peakOffset);
+                        if (loPeakAvg == 0) {
+                            loPeakAvg = peakValue;
+                        } else {
+                            int numPeaks = loPeaks.size();
+                            loPeakAvg = ((loPeakAvg * (numPeaks-1)) + peakValue) / numPeaks;
+                        }
                         increasing = true;
                         peakOffset = pos;
                         peakValue = currentValue;                        
                     }
                 }
             }
+        }
+    }
+    
+    // resample with peaks information
+    private void resample() {
+        double amplitude = hiPeakAvg - loPeakAvg;
+        double multiplier = (WAVE_AMPLITUDE / 2) / amplitude;
+        for(int pos=0; pos<numSamples; ++pos) {
+            double currentValue = convertedSamples[pos];
+            currentValue = currentValue * multiplier;
+            convertedSamples[pos] = currentValue;
         }
     }
     

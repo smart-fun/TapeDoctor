@@ -9,10 +9,12 @@ import javafx.application.Application;
 //import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -26,6 +28,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private VBox root;
     private Stage stage;
     
+    private Menus menus;
     private Slider zoomSlider;
     private Slider offsetSlider;
     private WavImage wavImage;
@@ -33,15 +36,20 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private double zoomValue = 0;
     private double offsetValue = 0;
     
+    private int screenWidth = 640;
+    
     @Override
     public void start(Stage primaryStage) {
         
         stage = primaryStage;
         //StackPane root = new StackPane();
         root = new VBox();
-        root.getChildren().add(new Menus(primaryStage, this));
+        menus = new Menus(primaryStage, this);
+        root.getChildren().add(menus);
         
-        Scene scene = new Scene(root, 640, 512);
+        screenWidth = (int) Screen.getPrimary().getVisualBounds().getWidth();
+        
+        Scene scene = new Scene(root, screenWidth, 400);
         
         primaryStage.setTitle("Tape Doctor v" + version);
         primaryStage.setScene(scene);
@@ -57,25 +65,27 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
 
     @Override
     public void onWavLoaded(WavFile wavFile) {
+        if (zoomSlider != null) {
+            root.getChildren().remove(zoomSlider);
+            zoomSlider = null;
+        }
+        if (offsetSlider != null) {
+            root.getChildren().remove(offsetSlider);
+            offsetSlider = null;
+        }
+        if (wavImage != null) {
+            root.getChildren().remove(wavImage);
+            wavImage = null;                
+        }
         if (wavFile.isSupported()) {
+            menus.setCanSave(true);
             showWavLoaded(wavFile);
-            if (zoomSlider != null) {
-                root.getChildren().remove(zoomSlider);
-                zoomSlider = null;
-            }
-            if (offsetSlider != null) {
-                root.getChildren().remove(offsetSlider);
-                offsetSlider = null;
-            }
-            if (wavImage != null) {
-                root.getChildren().remove(wavImage);
-                wavImage = null;                
-            }
             addZoomSlider();
             addWavImage(wavFile);
             addOffsetSlider();
             stage.setTitle(wavFile.getFileName());
         } else {
+            menus.setCanSave(false);
             showWavNotSupported(wavFile);
         }
     }
@@ -104,7 +114,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     }
     
     private void addWavImage(WavFile wavFile) {
-        wavImage = new WavImage(640, 256, wavFile);
+        wavImage = new WavImage(screenWidth, 256, wavFile);
         root.getChildren().add(wavImage);
         wavImage.draw(offsetValue, zoomValue);
     }

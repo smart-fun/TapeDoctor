@@ -25,6 +25,8 @@ public class Menus extends MenuBar {
     
     final private OnMenuListener listener;
     
+    MenuItem saveItem;
+    
     public Menus(Stage stage, OnMenuListener listener) {
         super();
         
@@ -34,13 +36,18 @@ public class Menus extends MenuBar {
         Menu fileMenu = new Menu("File");
         {
             MenuItem openWavItem = new MenuItem("Open WAV");
+            fileMenu.getItems().add(openWavItem);
+            saveItem = new MenuItem("Save ZX81 .P");
+            saveItem.setDisable(true);
+            fileMenu.getItems().add(saveItem);
             MenuItem separator = new SeparatorMenuItem();
             MenuItem quitItem = new MenuItem("Quit");
-            fileMenu.getItems().addAll(openWavItem, separator, quitItem);
+            fileMenu.getItems().addAll(separator, quitItem);
             
             openWavItem.setOnAction((ActionEvent actionEvent) -> {
                 openWavFile(stage);
             });
+            
                         
             quitItem.setOnAction((ActionEvent actionEvent) -> {
                 System.exit(0);
@@ -59,6 +66,10 @@ public class Menus extends MenuBar {
         }
         
         getMenus().addAll(fileMenu, helpMenu);
+    }
+    
+    public void setCanSave(boolean canSave) {
+        saveItem.setDisable(!canSave);
     }
     
     private void showAboutDialog() {

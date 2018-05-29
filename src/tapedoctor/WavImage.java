@@ -6,8 +6,10 @@
 package tapedoctor;
 
 import java.util.ArrayList;
+import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -17,14 +19,37 @@ import javafx.scene.paint.Color;
 public class WavImage extends Canvas {
     
     private WavFile wavFile;
+    private double displayOffset = 0;
+    private double displayZoom = 0;
     
     public WavImage(int width, int height, WavFile wavFile) {
         super(width, height);
         
         this.wavFile = wavFile;
+        
+        this.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x = event.getX();
+                displayZoom = 1;
+                displayOffset = 50;
+                draw();
+            }
+            
+        });
     }
     
-    public void draw(double offsetValue, double zoomValue) {
+    // 0-100
+    public void setOffsetPercent(double offsetPercent) {
+        displayOffset = offsetPercent;
+    }
+    
+    // 0-1
+    public void setZoom(double zoomValue) {
+        displayZoom = zoomValue;
+    }
+    
+    public void draw() {
         GraphicsContext gc = getGraphicsContext2D();
         
         double width = getWidth();
@@ -48,11 +73,11 @@ public class WavImage extends Canvas {
         
         double stepZoom0 = wavFile.getNumSamples() / (double)width;
         double stepZoom100 = 1;
-        double step = (stepZoom100 * zoomValue) + (stepZoom0 * (1 - zoomValue));
+        double step = (stepZoom100 * displayZoom) + (stepZoom0 * (1 - displayZoom));
         
         double samplesOnScreen = step * width;
         double remainingSamples = wavFile.getNumSamples() - samplesOnScreen;
-        final double offset = offsetValue * remainingSamples / 100;
+        final double offset = displayOffset * remainingSamples / 100;
         
         double position = offset;
         for(int x=0; x<width; ++x) {

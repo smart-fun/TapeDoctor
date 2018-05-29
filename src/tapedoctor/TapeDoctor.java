@@ -117,7 +117,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private void addWavImage(WavFile wavFile) {
         wavImage = new WavImage(screenWidth, 256, wavFile);
         root.getChildren().add(wavImage);
-        wavImage.draw(offsetValue, zoomValue);
+        wavImage.draw();
     }
     
     private void addZoomSlider() {
@@ -137,7 +137,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
                 zoomValue = (double) newValue;
                 if (wavImage != null) {
-                    wavImage.draw(offsetValue, zoomValue);
+                    wavImage.setZoom(zoomValue);
+                    wavImage.draw();
                 }
             }
         });
@@ -161,7 +162,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
                 offsetValue = (double) newValue;
                 if (wavImage != null) {
-                    wavImage.draw(offsetValue, zoomValue);
+                    wavImage.setOffsetPercent(offsetValue);
+                    wavImage.draw();
                 }
             }
         });

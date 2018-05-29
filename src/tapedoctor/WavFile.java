@@ -58,6 +58,16 @@ public class WavFile {
     }
     private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
     
+    private static class ByteInfo {
+        int offset;
+        int value;
+        private ByteInfo(int offset, int value) {
+            this.offset = offset;
+            this.value = value;
+        }
+    }
+    private ArrayList<ByteInfo> byteArray = new ArrayList<>(16384);  // 16K default
+        
     public WavFile(File file) {
         
         this.file = file;
@@ -90,6 +100,7 @@ public class WavFile {
             
             
             findBits();
+            findBytes();
             
             System.out.println("WavFile init done");
         }
@@ -345,6 +356,27 @@ public class WavFile {
             return findNextLowPeak(pos);
         }
         return -1;
+    }
+    
+    private void findBytes() {
+        int pos = 0;
+        int bitArrayPos = 0;
+        while(bitArrayPos < bitsArray.size() - 7) {
+
+            int byteValue = 0;
+            for(int i=0; i<8; ++i) {
+                BitInfo bitInfo = bitsArray.get(bitArrayPos + i);
+                byteValue = (byteValue << 1) + bitInfo.value;
+            }
+            
+            // TODO: check start and end offset respects good timing !
+            BitInfo bitInfo = bitsArray.get(bitArrayPos);
+            ByteInfo byteInfo = new ByteInfo(bitInfo.offset, byteValue);
+            byteArray.add(byteInfo);
+            
+            bitArrayPos += 8;
+        }
+    
     }
     
 }

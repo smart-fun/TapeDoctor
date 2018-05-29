@@ -24,6 +24,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     public static final String version = "0.0.1";
     
     private VBox root;
+    private Stage stage;
     
     private Slider zoomSlider;
     private Slider offsetSlider;
@@ -35,6 +36,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     @Override
     public void start(Stage primaryStage) {
         
+        stage = primaryStage;
         //StackPane root = new StackPane();
         root = new VBox();
         root.getChildren().add(new Menus(primaryStage, this));
@@ -72,6 +74,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             addZoomSlider();
             addWavImage(wavFile);
             addOffsetSlider();
+            stage.setTitle(wavFile.getFileName());
         } else {
             showWavNotSupported(wavFile);
         }

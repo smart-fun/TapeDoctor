@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+// TODO: check if 4 peaks is 0 and 9 peaks is 1, or the contrary
 package tapedoctor;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,11 +22,12 @@ import java.util.logging.Logger;
  */
 public class WavFile {
     
-    private static final double PEAK_THRESHOLD = 0.005;
-    private static final double WAVE_AMPLITUDE = 0.75;
+    private static final double PEAK_THRESHOLD = 0.01;
+    private static final double WAVE_AMPLITUDE = 0.6;
+    private static final double BAUDS = 400;
     
     private byte[] fileBuffer;
-    private String fileName;
+    private File file;
     
     // Header information
     private long fileSize;
@@ -44,9 +48,19 @@ public class WavFile {
     double hiPeakAvg = 0;
     double loPeakAvg = 0;
     
+    private static class BitInfo {
+        int offset;
+        int value;
+        private BitInfo(int offset, int value) {
+            this.offset = offset;
+            this.value = value;
+        }
+    }
+    private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
+    
     public WavFile(File file) {
         
-        fileName = file.getAbsolutePath();
+        this.file = file;
         try {
             fileBuffer = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
         } catch (IOException ex) {
@@ -74,6 +88,9 @@ public class WavFile {
             //resampleDynamic();
             System.out.println("Second Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
             
+            
+            findBits();
+            
             System.out.println("WavFile init done");
         }
         
@@ -98,6 +115,10 @@ public class WavFile {
         return numSamples;
     }
     
+    public String getFileName() {
+        return file.getName();
+    }
+    
     public boolean isHighPeak(int position) {
         return hiPeaks.contains(position);
     }
@@ -107,7 +128,7 @@ public class WavFile {
     
     public String getDisplayInfo() {
         StringBuilder builder = new StringBuilder();
-        builder.append(fileName);
+        builder.append(file.getAbsolutePath());
         builder.append("\n");
         if (numChannels == 1) {
             builder.append("Mono\n");
@@ -213,7 +234,7 @@ public class WavFile {
     // resample with peaks information
     private void resample() {
         double amplitude = hiPeakAvg - loPeakAvg;
-        double multiplier = (WAVE_AMPLITUDE / 2) / amplitude;
+        double multiplier = WAVE_AMPLITUDE / amplitude;
         for(int pos=0; pos<numSamples; ++pos) {
             double currentValue = convertedSamples[pos];
             currentValue = currentValue * multiplier;
@@ -221,7 +242,8 @@ public class WavFile {
         }
     }
     
-        // resample with peaks information
+    // resample with peaks information
+    /*
     private void resampleDynamic() {
         double hiPeakSmooth = hiPeakAvg;
         double loPeakSmooth = loPeakAvg;
@@ -237,10 +259,92 @@ public class WavFile {
             //}
 
             double amplitude = hiPeakSmooth - loPeakSmooth;
-            double multiplier = (WAVE_AMPLITUDE / 2) / amplitude;
+            double multiplier = WAVE_AMPLITUDE / amplitude;
             currentValue = currentValue * multiplier;
             convertedSamples[pos] = currentValue;
         }
+    }
+*/
+
+// TODO: tries to find zeroes (4 peaks) and ones (9 peaks)
+    
+    private int getNumHighPeaks(int startPos, int endPos) {
+        return getNumPeaks(hiPeaks, startPos, endPos);
+    }
+
+    private int getNumLowPeaks(int startPos, int endPos) {
+        return getNumPeaks(loPeaks, startPos, endPos);
+    }
+
+    private int getNumPeaks(HashSet<Integer> peaks, int startPos, int endPos) {
+        int count = 0;
+        for(int pos=startPos; pos<endPos; ++pos) {
+            if (peaks.contains(pos)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    private int findNextHighPeak(int startPos) {
+        return findNextPeak(hiPeaks, startPos);
+    }
+
+    private int findNextLowPeak(int startPos) {
+        return findNextPeak(loPeaks, startPos);
+    }
+
+    private int findNextPeak(HashSet<Integer> peaks, int startPos) {
+        for(int pos=startPos+1; pos<numSamples; ++pos) {
+            if (peaks.contains(pos)) {
+                return pos;
+            }
+        }
+        return -1;
+    }
+    
+    private void findBits() {
+        int pos = 0;
+        while (pos < numSamples) {
+            pos = findNextBit(pos);
+            if (pos < 0) {
+                break;
+            }
+        }
+    }
+    
+    private int findNextBit(int startPos) {
+        int pos = findNextHighPeak(startPos);
+        if (pos >= 0) {
+            int startBit = pos;
+            double numSamples0 = 7 * 6 * sampleRate / 22050;    // 7 values per sample in 22Khz, 4 peaks + blank for 0
+            {
+                int endBit0 = startBit + (int)numSamples0;
+                int numHigh0 = getNumHighPeaks(startBit, endBit0);
+                int numLow0 = getNumLowPeaks(startBit, endBit0);
+                if ((numHigh0 == 4) && (numLow0 == 4)) {
+                    // this is a 0 bit
+                    BitInfo bitInfo = new BitInfo(startBit, 0);
+                    bitsArray.add(bitInfo);
+                    return endBit0;
+                }
+            }
+
+            double numSamples1 = 7 * 11 * sampleRate / 22050;   // 7 values per sample in 22Khz, 9 peaks + blank for 1
+            {
+                int endBit1 = startBit + (int)numSamples1;
+                int numHigh1 = getNumHighPeaks(startBit, endBit1);
+                int numLow1 = getNumLowPeaks(startBit, endBit1);
+                if ((numHigh1 == 9) && (numLow1 == 9)) {
+                    // this is a 1 bit
+                    BitInfo bitInfo = new BitInfo(startBit, 1);
+                    bitsArray.add(bitInfo);
+                    return endBit1;
+                }
+            }
+            return findNextLowPeak(pos);
+        }
+        return -1;
     }
     
 }

@@ -25,7 +25,8 @@ public class Menus extends MenuBar {
     
     final private OnMenuListener listener;
     
-    MenuItem saveItem;
+    private MenuItem saveItem;
+    private WavFile wavFile;
     
     public Menus(Stage stage, OnMenuListener listener) {
         super();
@@ -51,6 +52,10 @@ public class Menus extends MenuBar {
                         
             quitItem.setOnAction((ActionEvent actionEvent) -> {
                 System.exit(0);
+            });
+            
+            saveItem.setOnAction((ActionEvent actionEvent) -> {
+                listener.onSavePressed(wavFile);
             });
         }
         
@@ -82,20 +87,21 @@ public class Menus extends MenuBar {
     
     private void openWavFile(Stage stage) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Resource File");
+        fileChooser.setTitle("Open ZX81 WAV File");
         fileChooser.getExtensionFilters().addAll(
             new ExtensionFilter("WAV Files", "*.wav"),
             new ExtensionFilter("All Files", "*.*"));
         File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {
             System.out.println("Wav Selected: " + selectedFile.getAbsolutePath());
-            WavFile wavFile = new WavFile(selectedFile);
+            wavFile = new WavFile(selectedFile);
             listener.onWavLoaded(wavFile);
         }
     }
     
     public interface OnMenuListener {
         void onWavLoaded(WavFile wavFile);
+        void onSavePressed(WavFile wavFile);
     }
     
 }

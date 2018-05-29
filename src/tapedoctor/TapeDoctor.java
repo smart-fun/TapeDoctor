@@ -5,15 +5,16 @@
  */
 package tapedoctor;
 
+import java.io.File;
 import javafx.application.Application;
 //import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -166,6 +167,19 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         });
         
         offsetSlider = slider;
+    }
+
+    @Override
+    public void onSavePressed(WavFile wavFile) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Program");
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter(".P Programs", "*.p"),
+            new FileChooser.ExtensionFilter("All Files", "*.*"));
+        File file = fileChooser.showSaveDialog(stage);
+        if (file != null) {
+            wavFile.save(file);
+        }
     }
     
 }

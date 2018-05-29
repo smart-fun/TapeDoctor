@@ -8,6 +8,8 @@
 package tapedoctor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -377,6 +379,24 @@ public class WavFile {
             bitArrayPos += 8;
         }
     
+    }
+    
+    public void save(File file) {
+        byte[] buffer = new byte[byteArray.size()];
+        int pos = 0;
+        for(ByteInfo byteInfo : byteArray) {
+            buffer[pos] = (byte) byteInfo.value;
+            ++pos;
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(buffer, 0, buffer.length);
+            fos.flush();
+            fos.close();
+        } catch (IOException ex) {
+            Logger.getLogger(WavFile.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+        }
     }
     
 }

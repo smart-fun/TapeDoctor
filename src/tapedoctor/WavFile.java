@@ -63,6 +63,19 @@ public class WavFile {
     }
     private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
     
+    public static class MissingBitInfo {
+        int offsetStart;
+        int offsetEnd;
+        private MissingBitInfo(int offsetStart, int offsetEnd) {
+            this.offsetStart = offsetStart;
+            this.offsetEnd = offsetEnd;
+        }
+    }
+    private ArrayList<MissingBitInfo> missingBits = new ArrayList<>();
+    public ArrayList<MissingBitInfo> getMissingBits() {
+        return missingBits;
+    }
+    
     private static class ByteInfo {
         int offset;
         int value;
@@ -72,7 +85,7 @@ public class WavFile {
         }
     }
     private ArrayList<ByteInfo> byteArray = new ArrayList<>(16384);  // 16K default
-        
+            
     public WavFile(File file) {
         
         this.file = file;
@@ -105,6 +118,7 @@ public class WavFile {
             
             computePeakPeriod();
             findBits();
+            logMissingBits();
             findBytes();
             
             System.out.println("WavFile init done");
@@ -199,6 +213,7 @@ public class WavFile {
         }
     }
     
+    // Peak detection
     private void searchPeaks() {
         hiPeaks.clear();
         loPeaks.clear();
@@ -245,6 +260,36 @@ public class WavFile {
                 }
             }
         }
+    }
+    
+    private void logMissingBits() {
+        
+        BitInfo previous = null;
+        int numErrors = 0;
+        for(BitInfo bitInfo: bitsArray) {
+            if (previous == null) {
+                previous = bitInfo;
+            } else {
+                int space = bitInfo.offset - previous.offset;
+                int maxSpace;
+                if (previous.value == 0) {  // previous is a bit 0
+                    maxSpace = peakPeriod * (4 + 6);
+                } else {                    // previous is a bit 1
+                    maxSpace = peakPeriod * (9 + 6);
+                }
+                if (space >= maxSpace) {
+                    ++numErrors;
+                    
+                    System.out.println("Missing 1 bit after position: " + previous.offset);
+                    MissingBitInfo missingBit = new MissingBitInfo(previous.offset + maxSpace, bitInfo.offset);
+                    missingBits.add(missingBit);
+                }
+                previous = bitInfo;
+            }
+        }
+        System.out.println(numErrors + " errors");
+        
+        
     }
     
     // resample with peaks information

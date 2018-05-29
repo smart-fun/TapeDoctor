@@ -5,6 +5,7 @@
  */
 package tapedoctor;
 
+import java.util.ArrayList;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -51,7 +52,7 @@ public class WavImage extends Canvas {
         
         double samplesOnScreen = step * width;
         double remainingSamples = wavFile.getNumSamples() - samplesOnScreen;
-        double offset = offsetValue * remainingSamples / 100;
+        final double offset = offsetValue * remainingSamples / 100;
         
         double position = offset;
         for(int x=0; x<width; ++x) {
@@ -74,6 +75,48 @@ public class WavImage extends Canvas {
         
         gc.closePath();
         
+        int offsetStart = (int) offset;
+        int offsetEnd = (int) (offsetStart + (step * width));
+        showErrors(gc, offsetStart, offsetEnd);
+        
+    }
+    
+    private void showErrors(GraphicsContext gc, int offsetStart, int offsetEnd) {
+        
+        ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
+        
+        double screenWidth = getWidth();
+        double offsetWidth = offsetEnd - offsetStart;
+        double pixelsPerOffset = screenWidth / offsetWidth;
+        
+        if (missingBits.size() > 0) {
+            gc.beginPath(); 
+            gc.setStroke(Color.RED);
+            
+            for(WavFile.MissingBitInfo info : missingBits) {
+                int start = info.offsetStart;
+                if (start >= offsetEnd) {
+                    continue;
+                }
+                int end = info.offsetEnd;
+                if (end <= offsetStart) {
+                    continue;
+                }
+                
+                double leftOffset = start-offsetStart;
+                double leftPixel = leftOffset * pixelsPerOffset;
+
+                double rightOffset = end-offsetStart;
+                double rightPixel = rightOffset * pixelsPerOffset;
+                
+                gc.moveTo(leftPixel, 0);
+                gc.lineTo(rightPixel, 10);
+               
+            }
+
+            gc.stroke();
+            gc.closePath();
+        }
     }
     
 }

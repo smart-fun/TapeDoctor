@@ -8,13 +8,15 @@
 package tapedoctor;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,8 +49,9 @@ public class WavFile {
     private double[] convertedSamples;
     private HashSet<Integer> hiPeaks = new HashSet<>();
     private HashSet<Integer> loPeaks = new HashSet<>();
-    double hiPeakAvg = 0;
-    double loPeakAvg = 0;
+    private double hiPeakAvg = 0;
+    private double loPeakAvg = 0;
+    private int peakPeriod = 7;
     
     private static class BitInfo {
         int offset;
@@ -100,7 +103,7 @@ public class WavFile {
             //resampleDynamic();
             System.out.println("Second Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
             
-            
+            computePeakPeriod();
             findBits();
             findBytes();
             
@@ -279,7 +282,40 @@ public class WavFile {
     }
 */
 
-// TODO: tries to find zeroes (4 peaks) and ones (9 peaks)
+    private void computePeakPeriod() {
+        // put in hashmap the number of samples between peaks (period), number of times we have this period
+        // then find the mose used period
+        
+        // first put all peaks in a sorted array
+        ArrayList<Integer> peaksArray = new ArrayList<>();
+        peaksArray.addAll(hiPeaks);
+        Collections.sort(peaksArray);
+        
+        // Then read periods
+        HashMap<Integer, Integer> periods = new HashMap<>();
+        int previousPeak = peaksArray.get(0);
+        for(int i=1; i<peaksArray.size(); ++i) {
+            int peak = peaksArray.get(i);
+            int period = peak - previousPeak;
+            int num = periods.containsKey(period) ? periods.get(period) + 1 : 1;
+            periods.put(period, num);
+            previousPeak = peak;
+        }
+        
+        // Now finds the most used period
+        int periodScore = 0;
+        Set<Integer> keys = periods.keySet();
+        for(Integer key : keys) {   // keys are periods
+            int score = periods.get(key);
+            if (score > periodScore) {
+                periodScore = score;
+                peakPeriod = key;
+            }
+        }
+        
+        System.out.println("Peak Period is " + peakPeriod);
+        
+    }
     
     private int getNumHighPeaks(int startPos, int endPos) {
         return getNumPeaks(hiPeaks, startPos, endPos);
@@ -330,7 +366,8 @@ public class WavFile {
         int pos = findNextHighPeak(startPos);
         if (pos >= 0) {
             int startBit = pos;
-            double numSamples0 = 7 * 6 * sampleRate / 22050;    // 7 values per sample in 22Khz, 4 peaks + blank for 0
+            //double numSamples0 = 7 * 6 * sampleRate / 22050;    // 7 values per sample in 22Khz, 4 peaks + blank for 0
+            double numSamples0 = peakPeriod * 6;    // 4 peaks + blank for 0
             {
                 int endBit0 = startBit + (int)numSamples0;
                 int numHigh0 = getNumHighPeaks(startBit, endBit0);
@@ -341,9 +378,13 @@ public class WavFile {
                     bitsArray.add(bitInfo);
                     return endBit0;
                 }
+                if (numHigh0 < 4) { // optim: don't try to find 1 bit (9 peaks) if already less than 4
+                    return findNextLowPeak(pos);
+                }
             }
 
-            double numSamples1 = 7 * 11 * sampleRate / 22050;   // 7 values per sample in 22Khz, 9 peaks + blank for 1
+            //double numSamples1 = 7 * 11 * sampleRate / 22050;   // 7 values per sample in 22Khz, 9 peaks + blank for 1
+            double numSamples1 = peakPeriod * 11;   // 9 peaks + blank for 1
             {
                 int endBit1 = startBit + (int)numSamples1;
                 int numHigh1 = getNumHighPeaks(startBit, endBit1);

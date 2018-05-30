@@ -92,6 +92,11 @@ public class WavFile {
         }
         return null;
     }
+    public void deleteMissingBitArea(int index) {
+        if ((index >= 0) && index < missingBits.size()) {
+            missingBits.remove(index);
+        }
+    }
     
     public static class ByteInfo {
         int offsetStart;

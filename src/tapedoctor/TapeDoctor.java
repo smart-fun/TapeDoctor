@@ -285,6 +285,18 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         });
         errorControlBox.getChildren().add(applyForceBit);
         
+        Button deleteZone = new Button("DELETE!");
+        deleteZone.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                int currentError = wavImage.getCurrentError();
+                wavFile.deleteMissingBitArea(currentError);
+                updateCurrentErrorData(wavFile);
+                wavImage.draw();
+            }
+        });
+        errorControlBox.getChildren().add(deleteZone);
+        
         updateCurrentErrorData(wavFile);
         
     }

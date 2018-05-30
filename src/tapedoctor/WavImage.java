@@ -92,6 +92,10 @@ public class WavImage extends Canvas {
         }
     }
     
+    public void unselectCurrent() {
+        currentError = -1;
+    }
+    
     // 0-100
     public void setOffsetPercent(double offsetPercent) {
         double width = getWidth();

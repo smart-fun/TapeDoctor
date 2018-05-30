@@ -144,7 +144,12 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private void addWavImage(WavFile wavFile) {
         wavImage = new WavImage(screenWidth, 256, wavFile);
         root.getChildren().add(wavImage);
-        wavImage.draw();
+        if (wavFile.getNumErrors() > 0) {
+            wavImage.jumpToNextError(); // draw is already called here
+        } else {
+            wavImage.draw();
+        }
+        
     }
     
     private void addZoomSlider() {
@@ -274,8 +279,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             public void handle(ActionEvent event) {
                 boolean removed = wavFile.applyForceBit(wavImage.getCurrentError());
                 if (removed) {
-                    wavImage.checkCurrentErrorChange();
-                    // disable current error, set to -1 ?
+                    wavImage.unselectCurrent();
                 } else {
                     wavImage.jumpToCurrentError(wavFile.getMissingBits());
                 }
@@ -291,6 +295,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             public void handle(ActionEvent event) {
                 int currentError = wavImage.getCurrentError();
                 wavFile.deleteMissingBitArea(currentError);
+                wavImage.unselectCurrent();
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
             }
@@ -311,6 +316,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             String text = " ERROR " + displayIndex + " / " + numErrors + " \n";
             text += " " + missingBitInfo.offsetStart + " -> " + missingBitInfo.offsetEnd + " ";
             currentErrorSize.setText(text);
+        } else {
+            currentErrorSize.setText("");
         }
     }
     

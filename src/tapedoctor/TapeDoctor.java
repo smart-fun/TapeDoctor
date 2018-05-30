@@ -268,19 +268,25 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         applyForceBit.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                wavFile.applyForceBit(wavImage.getCurrentError());
+                boolean removed = wavFile.applyForceBit(wavImage.getCurrentError());
+                if (removed) {
+                    wavImage.checkCurrentErrorChange();
+                    // disable current error, set to -1 ?
+                } else {
+                    wavImage.jumpToCurrentError(wavFile.getMissingBits());
+                }
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
             }
         });
         errorControlBox.getChildren().add(applyForceBit);
         
-        
         updateCurrentErrorData(wavFile);
         
     }
     
     private void updateCurrentErrorData(WavFile wavFile) {
+        
         int currentError = wavImage.getCurrentError();
         MissingBitInfo missingBitInfo = wavFile.getMissingBit(currentError);
         if (missingBitInfo != null) {

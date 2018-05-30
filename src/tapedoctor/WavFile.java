@@ -87,7 +87,7 @@ public class WavFile {
         return missingBits;
     }
     public MissingBitInfo getMissingBit(int errorNumber) {
-        if (errorNumber < missingBits.size()) {
+        if ((errorNumber >= 0) && errorNumber < missingBits.size()) {
             return missingBits.get(errorNumber);
         }
         return null;
@@ -478,6 +478,7 @@ public class WavFile {
     private void findBytes() {
         int pos = 0;
         int bitArrayPos = 0;
+        byteArray.clear();
         while(bitArrayPos < bitsArray.size() - 7) {
 
             int byteValue = 0;
@@ -566,7 +567,9 @@ public class WavFile {
         System.out.println(numFixes + " fixes applied");
     }
     
-    public void applyForceBit(int missingBitIndex) {
+    // returns true if removed all Missing bit info
+    public boolean applyForceBit(int missingBitIndex) {
+        boolean removed = false;
         if ((missingBitIndex >= 0) && (missingBitIndex < missingBits.size())) {
             MissingBitInfo missingBit = missingBits.get(missingBitIndex);
             double startOffset = missingBit.offsetStart;
@@ -597,11 +600,14 @@ public class WavFile {
                     double sizeLimit = peakPeriod * 2.5;
                     if (missingBit.offsetEnd - missingBit.offsetStart < sizeLimit) {
                         missingBits.remove(missingBitIndex);
+                        removed = true;
                     }
                     
                 }
+                findBytes();    // Re-calculate bytes
             }
         }
+        return removed;
     }
     
     private void sortBitsArray() {

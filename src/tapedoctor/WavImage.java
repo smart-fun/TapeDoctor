@@ -52,6 +52,16 @@ public class WavImage extends Canvas {
         return currentError;
     }
     
+    // returns true if changes because out of bounds
+    public boolean checkCurrentErrorChange() {
+        ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
+        if (currentError >= missingBits.size()) {
+            currentError = missingBits.size() - 1;
+            return true;
+        }
+        return false;
+    }
+    
     public void jumpToPreviousError() {
         ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
         if (!missingBits.isEmpty()) {
@@ -73,7 +83,7 @@ public class WavImage extends Canvas {
         }
     }
     
-    private void jumpToCurrentError(ArrayList<WavFile.MissingBitInfo> missingBits) {
+    public void jumpToCurrentError(ArrayList<WavFile.MissingBitInfo> missingBits) {
         WavFile.MissingBitInfo firstError = missingBits.get(currentError);
         displayOffset = firstError.offsetStart - (getWidth() * 0.4);
         displayZoom = 1;
@@ -249,7 +259,11 @@ public class WavImage extends Canvas {
                     
                     gc.setFill(Color.BLACK);
                     gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-                    gc.fillText("" + byteInfo.value, leftPixel + 20, HalfHeight * 1.75);
+                    int printx = (int) (leftPixel + 20);
+                    do {
+                        gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
+                        printx += 400;
+                    } while (printx < rightPixel - 50);
                 }
                 
                 gc.closePath();
@@ -278,6 +292,7 @@ public class WavImage extends Canvas {
                     gc.setFill(new Color(0,0,1, 0.3));
                     gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
                     
+                    // display Bit value
                     gc.setFill(Color.BLACK);
                     gc.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
                     gc.fillText("" + bitInfo.value, leftPixel + 20, HalfHeight * 1.95);

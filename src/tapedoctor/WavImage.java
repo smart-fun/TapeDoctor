@@ -159,7 +159,14 @@ public class WavImage extends Canvas {
                 double pixelWidth = rightPixel - leftPixel;
                 
                 gc.setFill(new Color(1,0,0, 0.3));
-                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);               
+                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);
+                
+                if (displayZoom >= 0.99) {
+                    gc.setFill(Color.BLACK);
+                    gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                    gc.fillText(info.offsetStart + " -> " + info.offsetEnd, leftPixel + 20, HalfHeight * 0.1);
+                }
+
             }
             //gc.stroke();
             gc.closePath();

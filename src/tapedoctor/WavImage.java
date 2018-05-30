@@ -23,6 +23,7 @@ public class WavImage extends Canvas {
     private WavFile wavFile;
     private double displayOffset = 0;
     private double displayZoom = 0;
+    private int currentError = -1;
     
     public WavImage(int width, int height, WavFile wavFile) {
         super(width, height);
@@ -42,7 +43,11 @@ public class WavImage extends Canvas {
                 
                 ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
                 if (!missingBits.isEmpty()) {
-                    WavFile.MissingBitInfo firstError = missingBits.get(0);
+                    ++currentError;
+                    if (currentError >= missingBits.size()) {
+                        currentError = 0;
+                    }
+                    WavFile.MissingBitInfo firstError = missingBits.get(currentError);
                     displayOffset = firstError.offsetStart - (width / 2);
                     displayZoom = 1;
                 }
@@ -159,14 +164,37 @@ public class WavImage extends Canvas {
                 double rightPixel = rightOffset * pixelsPerOffset;
                 double pixelWidth = rightPixel - leftPixel;
                 
-                gc.setFill(new Color(1,0,0, 0.3));
-                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);
+                boolean fixedValue = false;
                 
                 if (displayZoom >= 0.99) {
                     gc.setFill(Color.BLACK);
                     gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
                     gc.fillText(info.offsetStart + " -> " + info.offsetEnd, leftPixel + 20, HalfHeight * 0.1);
+                    
+                    double bit0size = wavFile.get0bitSize();
+                    double numberOf0 = (info.offsetEnd - info.offsetStart) / bit0size;
+                    if ((numberOf0 > 0.9) && (numberOf0 < 1.1)) {
+                        // This is 0 that was not detected
+                        gc.fillText("This is a 0", leftPixel + 20, HalfHeight * 0.2);
+                        fixedValue = true;
+                    } else {
+                        double bit1size = wavFile.get1bitSize();
+                        double numberOf1 = (info.offsetEnd - info.offsetStart) / bit1size;
+                        if ((numberOf1 > 0.9) && (numberOf1 < 1.1)) {
+                            // This is 1 that was not detected
+                            gc.fillText("This is a 1", leftPixel + 20, HalfHeight * 0.2);
+                            fixedValue = true;
+                        }
+                    }
+                    
                 }
+
+                if (fixedValue) {
+                    gc.setFill(new Color(0,1,0, 0.3));
+                } else {
+                    gc.setFill(new Color(1,0,0, 0.3));
+                }
+                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);
 
             }
             //gc.stroke();

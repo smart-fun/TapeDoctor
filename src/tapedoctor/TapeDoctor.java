@@ -244,6 +244,26 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         currentErrorSize = new Text("");
         errorControlBox.getChildren().add(currentErrorSize);
         
+        Button set0 = new Button("Set 0 bit");
+        set0.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                forceBit(wavFile, 0);
+                updateCurrentErrorData(wavFile);
+            }
+        });
+        errorControlBox.getChildren().add(set0);
+        
+        Button set1 = new Button("Set 1 bit");
+        set1.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                forceBit(wavFile, 1);
+                updateCurrentErrorData(wavFile);
+            }
+        });
+        errorControlBox.getChildren().add(set1);
+        
         updateCurrentErrorData(wavFile);
         
     }
@@ -255,6 +275,16 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             int displayIndex = currentError + 1;
             String text = " " + displayIndex + " : "+ missingBitInfo.offsetStart + " -> " + missingBitInfo.offsetEnd + " ";
             currentErrorSize.setText(text);
+        }
+    }
+    
+    private void forceBit(WavFile wavFile, int value) {
+        int currentError = wavImage.getCurrentError();
+        MissingBitInfo missingBitInfo = wavFile.getMissingBit(currentError);
+        if (missingBitInfo != null) {
+            missingBitInfo.forcedValues.clear();
+            missingBitInfo.forcedValues.add(value);
+            wavImage.draw();
         }
     }
     

@@ -20,6 +20,9 @@ import javafx.scene.text.FontWeight;
  */
 public class WavImage extends Canvas {
     
+    private static final Color RED_TRANSP = new Color(1,0,0, 0.3);
+    private static final Color GREEN_TRANSP = new Color(0,1,0, 0.3);
+    
     private WavFile wavFile;
     private double displayOffset = 0;
     private double displayZoom = 0;
@@ -40,15 +43,6 @@ public class WavImage extends Canvas {
                 double samplesOnScreen = step * width;
                 displayOffset += x * samplesOnScreen / width;
                 displayZoom = 1;*/
-                
-                ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
-                if (!missingBits.isEmpty()) {
-                    ++currentError;
-                    if (currentError >= missingBits.size()) {
-                        currentError = 0;
-                    }
-                    jumpToCurrentError(missingBits);
-                }
             }
             
         });
@@ -201,18 +195,31 @@ public class WavImage extends Canvas {
                 }
 
                 if (info.forcedValues.isEmpty()) {
-                    gc.setFill(new Color(1,0,0, 0.3));
+                    gc.setFill(RED_TRANSP);
+                    gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);    // Red on all height
                 } else {
-                    if (displayDetails) {
-                        int value = info.forcedValues.get(0);
-                        gc.setFill(Color.BLACK);
-                        gc.fillText("Guessed is " + value, leftPixel + 20, HalfHeight * 0.2);
-                    }
-                    gc.setFill(new Color(0,1,0, 0.3));
-                }                                        
-                
-                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);
+                    gc.setFill(RED_TRANSP);
+                    gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight);      // Red on half height
 
+                    for(Integer bitValue : info.forcedValues) {
+                        double bitSize = (bitValue == 0) ? wavFile.get0bitSize() : wavFile.get1bitSize();
+                        rightOffset = leftOffset + bitSize;
+                        rightPixel = rightOffset * pixelsPerOffset;
+                        pixelWidth = rightPixel - leftPixel;
+
+                        if (displayDetails) {
+                            int value = info.forcedValues.get(0);
+                            gc.setFill(Color.BLACK);
+                            gc.fillText("Forced to " + value, leftPixel + 20, HalfHeight * 1.2);
+                        }
+
+                        gc.setFill(GREEN_TRANSP);
+                        gc.fillRect(leftPixel-1, HalfHeight, pixelWidth+2, HalfHeight);
+
+                        leftOffset = rightOffset;
+                    }
+                    
+                }                                        
 
             }
             //gc.stroke();

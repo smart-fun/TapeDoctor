@@ -84,10 +84,12 @@ public class WavImage extends Canvas {
     }
     
     public void jumpToCurrentError(ArrayList<WavFile.MissingBitInfo> missingBits) {
-        WavFile.MissingBitInfo firstError = missingBits.get(currentError);
-        displayOffset = firstError.offsetStart - (getWidth() * 0.4);
-        displayZoom = 1;
-        draw();
+        if ((currentError >= 0) && (currentError < missingBits.size())) {
+            WavFile.MissingBitInfo firstError = missingBits.get(currentError);
+            displayOffset = firstError.offsetStart - (getWidth() * 0.4);
+            displayZoom = 1;
+            draw();
+        }
     }
     
     // 0-100

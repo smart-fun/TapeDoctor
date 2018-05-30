@@ -12,13 +12,15 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -47,7 +49,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     
     private int screenWidth = 640;
     
-    private Text currentErrorSize;
+    private Label currentErrorSize;
     
     @Override
     public void start(Stage primaryStage) {
@@ -60,7 +62,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         
         screenWidth = (int) Screen.getPrimary().getVisualBounds().getWidth();
         
-        Scene scene = new Scene(root, screenWidth, 400);
+        Scene scene = new Scene(root, screenWidth, 450);
         
         primaryStage.setTitle("Tape Doctor v" + version);
         primaryStage.setScene(scene);
@@ -104,6 +106,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             if (wavFile.hasRecoveryErrors()) {
                 menus.displayApplyFixes(true);
                 errorControlBox = new HBox();
+                errorControlBox.setSpacing(10.0);
+                errorControlBox.setAlignment(Pos.CENTER);
                 root.getChildren().add(errorControlBox);
                 updateErrorControlBox(wavFile);
             }            
@@ -218,9 +222,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         
         errorControlBox.getChildren().clear();
         
-        Text title = new Text(" " + wavFile.getNumErrors() + " errors");
-        errorControlBox.getChildren().add(title);
-        
         Button previous = new Button("<<");
         previous.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -241,7 +242,10 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         });
         errorControlBox.getChildren().add(next);
         
-        currentErrorSize = new Text("");
+        currentErrorSize = new Label("");
+        currentErrorSize.setMinWidth(200);
+
+        //currentErrorSize.setBoundsType(TextBoundsType.VISUAL);
         errorControlBox.getChildren().add(currentErrorSize);
         
         Button set0 = new Button("Set 0 bit");
@@ -291,7 +295,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         MissingBitInfo missingBitInfo = wavFile.getMissingBit(currentError);
         if (missingBitInfo != null) {
             int displayIndex = currentError + 1;
-            String text = " " + displayIndex + " : "+ missingBitInfo.offsetStart + " -> " + missingBitInfo.offsetEnd + " ";
+            int numErrors = wavFile.getNumErrors();
+            String text = " ERROR " + displayIndex + " / " + numErrors + " \n";
+            text += " " + missingBitInfo.offsetStart + " -> " + missingBitInfo.offsetEnd + " ";
             currentErrorSize.setText(text);
         }
     }

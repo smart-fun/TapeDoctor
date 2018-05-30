@@ -86,6 +86,12 @@ public class WavFile {
     public ArrayList<MissingBitInfo> getMissingBits() {
         return missingBits;
     }
+    public MissingBitInfo getMissingBit(int errorNumber) {
+        if (errorNumber < missingBits.size()) {
+            return missingBits.get(errorNumber);
+        }
+        return null;
+    }
     
     public static class ByteInfo {
         int offsetStart;

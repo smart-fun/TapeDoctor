@@ -12,18 +12,17 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import tapedoctor.WavFile.MissingBitInfo;
 
 /**
  *
@@ -47,6 +46,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private double offsetValue = 0;
     
     private int screenWidth = 640;
+    
+    private Text currentErrorSize;
     
     @Override
     public void start(Stage primaryStage) {
@@ -225,6 +226,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             @Override
             public void handle(ActionEvent event) {
                 wavImage.jumpToPreviousError();
+                updateCurrentErrorData(wavFile);
             }
         });
         errorControlBox.getChildren().add(previous);
@@ -234,12 +236,26 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             @Override
             public void handle(ActionEvent event) {
                 wavImage.jumpToNextError();
+                updateCurrentErrorData(wavFile);
             }
         });
         errorControlBox.getChildren().add(next);
         
+        currentErrorSize = new Text("");
+        errorControlBox.getChildren().add(currentErrorSize);
         
+        updateCurrentErrorData(wavFile);
         
+    }
+    
+    private void updateCurrentErrorData(WavFile wavFile) {
+        int currentError = wavImage.getCurrentError();
+        MissingBitInfo missingBitInfo = wavFile.getMissingBit(currentError);
+        if (missingBitInfo != null) {
+            int displayIndex = currentError + 1;
+            String text = " " + displayIndex + " : "+ missingBitInfo.offsetStart + " -> " + missingBitInfo.offsetEnd + " ";
+            currentErrorSize.setText(text);
+        }
     }
     
 }

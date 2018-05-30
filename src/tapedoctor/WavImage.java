@@ -54,6 +54,10 @@ public class WavImage extends Canvas {
         });
     }
     
+    public int getCurrentError() {
+        return currentError;
+    }
+    
     public void jumpToPreviousError() {
         ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
         if (!missingBits.isEmpty()) {

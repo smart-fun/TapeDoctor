@@ -167,6 +167,10 @@ public class WavFile {
         return file.getName();
     }
     
+    public int getNumErrors() {
+        return missingBits.size();
+    }
+    
     public boolean isHighPeak(int position) {
         return hiPeaks.contains(position);
     }

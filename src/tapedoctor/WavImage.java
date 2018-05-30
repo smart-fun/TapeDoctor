@@ -47,15 +47,39 @@ public class WavImage extends Canvas {
                     if (currentError >= missingBits.size()) {
                         currentError = 0;
                     }
-                    WavFile.MissingBitInfo firstError = missingBits.get(currentError);
-                    displayOffset = firstError.offsetStart - (width / 2);
-                    displayZoom = 1;
+                    jumpToCurrentError(missingBits);
                 }
-                
-                draw();
             }
             
         });
+    }
+    
+    public void jumpToPreviousError() {
+        ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
+        if (!missingBits.isEmpty()) {
+            --currentError;
+            if (currentError < 0) {
+                currentError = missingBits.size() - 1;
+            }
+            jumpToCurrentError(missingBits);
+        }
+    }
+    public void jumpToNextError() {
+        ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
+        if (!missingBits.isEmpty()) {
+            ++currentError;
+            if (currentError >= missingBits.size()) {
+                currentError =  0;
+            }
+            jumpToCurrentError(missingBits);
+        }
+    }
+    
+    private void jumpToCurrentError(ArrayList<WavFile.MissingBitInfo> missingBits) {
+        WavFile.MissingBitInfo firstError = missingBits.get(currentError);
+        displayOffset = firstError.offsetStart - (getWidth() * 0.4);
+        displayZoom = 1;
+        draw();
     }
     
     // 0-100

@@ -10,10 +10,17 @@ import javafx.application.Application;
 //import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -33,6 +40,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private Slider zoomSlider;
     private Slider offsetSlider;
     private WavImage wavImage;
+    
+    private HBox errorControlBox;
     
     private double zoomValue = 0;
     private double offsetValue = 0;
@@ -81,15 +90,22 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             root.getChildren().remove(wavImage);
             wavImage = null;                
         }
+        if (errorControlBox != null) {
+            root.getChildren().remove(errorControlBox);
+            errorControlBox = null;
+        }
         if (wavFile.isSupported()) {
             menus.setCanSave(true);
-            if (wavFile.hasRecoveryErrors()) {
-                menus.displayApplyFixes(true);
-            }
             showWavLoaded(wavFile);
             addZoomSlider();
             addWavImage(wavFile);
             addOffsetSlider();
+            if (wavFile.hasRecoveryErrors()) {
+                menus.displayApplyFixes(true);
+                errorControlBox = new HBox();
+                root.getChildren().add(errorControlBox);
+                updateErrorControlBox(wavFile);
+            }            
             stage.setTitle(wavFile.getFileName());
         } else {
             menus.setCanSave(false);
@@ -194,6 +210,36 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     public void onApplyFixes(WavFile wavFile) {
         wavFile.applyFixes();
         wavImage.draw();
+        updateErrorControlBox(wavFile);
+    }
+    
+    private void updateErrorControlBox(WavFile wavFile) {
+        
+        errorControlBox.getChildren().clear();
+        
+        Text title = new Text(" " + wavFile.getNumErrors() + " errors");
+        errorControlBox.getChildren().add(title);
+        
+        Button previous = new Button("<<");
+        previous.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                wavImage.jumpToPreviousError();
+            }
+        });
+        errorControlBox.getChildren().add(previous);
+
+        Button next = new Button(">>");
+        next.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                wavImage.jumpToNextError();
+            }
+        });
+        errorControlBox.getChildren().add(next);
+        
+        
+        
     }
     
 }

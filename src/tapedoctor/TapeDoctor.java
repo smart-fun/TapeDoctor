@@ -189,5 +189,11 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             wavFile.save(file);
         }
     }
+
+    @Override
+    public void onApplyFixes(WavFile wavFile) {
+        wavFile.applyFixes();
+        wavImage.draw();
+    }
     
 }

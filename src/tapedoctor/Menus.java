@@ -43,6 +43,10 @@ public class Menus extends MenuBar {
             applyFixesItem = new MenuItem("Apply Fixes");
             applyFixesItem.setVisible(false);
             fileMenu.getItems().add(applyFixesItem);
+            applyFixesItem.setOnAction((ActionEvent actionEvent) -> {
+                applyFixesItem.setVisible(false);
+                listener.onApplyFixes(wavFile);
+            });
             
             saveItem = new MenuItem("Save ZX81 .P");
             saveItem.setDisable(true);
@@ -111,6 +115,7 @@ public class Menus extends MenuBar {
     public interface OnMenuListener {
         void onWavLoaded(WavFile wavFile);
         void onSavePressed(WavFile wavFile);
+        void onApplyFixes(WavFile wavFile);
     }
     
 }

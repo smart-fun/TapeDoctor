@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,16 +52,20 @@ public class WavFile {
     private HashSet<Integer> loPeaks = new HashSet<>();
     private double hiPeakAvg = 0;
     private double loPeakAvg = 0;
-    private int peakPeriod = 7;
+    private static int peakPeriod = 7;
     
     public static class BitInfo {
         int offsetStart;
         int offsetEnd;
         int value;
-        private BitInfo(int offsetStart, int offsetEnd, int value) {
+        private BitInfo(int offsetStart, int value) {
             this.offsetStart = offsetStart;
-            this.offsetEnd = offsetEnd;
             this.value = value;
+            if (value == 0) {
+                offsetEnd = offsetStart + (peakPeriod * 6); // 4 peaks + blank
+            } else {
+                offsetEnd = offsetStart + (peakPeriod * 11); // 9 peaks + blank
+            }
         }
     }
     private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
@@ -186,7 +191,11 @@ public class WavFile {
     }
     
     public double getSampleValue(int sampleNumber) {
-        return convertedSamples[sampleNumber];
+        if ((sampleNumber >= 0) && (sampleNumber < numSamples)) {
+            return convertedSamples[sampleNumber];
+        } else {
+            return 0;
+        }
     }
     
     private double getSample8bitsValue(int sampleNumber) {
@@ -429,7 +438,7 @@ public class WavFile {
                 int numLow0 = getNumLowPeaks(startBit, endBit0);
                 if ((numHigh0 == 4) && (numLow0 == 4)) {
                     // this is a 0 bit
-                    BitInfo bitInfo = new BitInfo(startBit, endBit0, 0);
+                    BitInfo bitInfo = new BitInfo(startBit, 0);
                     bitsArray.add(bitInfo);
                     return endBit0;
                 }
@@ -446,7 +455,7 @@ public class WavFile {
                 int numLow1 = getNumLowPeaks(startBit, endBit1);
                 if ((numHigh1 == 9) && (numLow1 == 9)) {
                     // this is a 1 bit
-                    BitInfo bitInfo = new BitInfo(startBit, endBit1, 1);
+                    BitInfo bitInfo = new BitInfo(startBit, 1);
                     bitsArray.add(bitInfo);
                     return endBit1;
                 }
@@ -506,7 +515,7 @@ public class WavFile {
     private void guessMissingBits() {
         double bit0size = get0bitSize();
         double bit1size = get1bitSize();
-        for(WavFile.MissingBitInfo info : missingBits) {
+        for(MissingBitInfo info : missingBits) {
             double numberOf0 = (info.offsetEnd - info.offsetStart) / bit0size;
             if ((numberOf0 > 0.9) && (numberOf0 < 1.1)) {
                 // This is 0 that was not detected
@@ -522,12 +531,34 @@ public class WavFile {
     }
     
     public boolean hasRecoveryErrors() {
-        for(WavFile.MissingBitInfo info : missingBits) {
+        for(MissingBitInfo info : missingBits) {
             if (info.forcedValues.size() > 0) {
                 return true;
             }
         }
         return false;
+    }
+    
+    public void applyFixes() {
+        int numFixes = 0;
+        for(int i=0; i<missingBits.size(); ++i) {
+            MissingBitInfo info = missingBits.get(i);
+            if (info.forcedValues.size() == 1) {
+                ++numFixes;
+                int value = info.forcedValues.get(0);
+                BitInfo bitInfo = new BitInfo(info.offsetStart, value);
+                bitsArray.add(bitInfo);
+                missingBits.remove(i);
+                --i;
+            }
+        }
+        Collections.sort(bitsArray, new Comparator<BitInfo>() {
+            @Override
+            public int compare(BitInfo b1, BitInfo b2) {
+                return b1.offsetStart - b2.offsetStart;
+            }            
+        });
+        System.out.println(numFixes + " fixes applied");
     }
     
 }

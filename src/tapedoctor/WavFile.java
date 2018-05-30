@@ -71,6 +71,7 @@ public class WavFile {
     public static class MissingBitInfo {
         int offsetStart;
         int offsetEnd;
+        ArrayList<Integer> forcedValues = new ArrayList<Integer>();
         private MissingBitInfo(int offsetStart, int offsetEnd) {
             this.offsetStart = offsetStart;
             this.offsetEnd = offsetEnd;
@@ -95,7 +96,7 @@ public class WavFile {
     public ArrayList<ByteInfo> getBytes() {
         return byteArray;
     }
-            
+    
     public WavFile(File file) {
         
         this.file = file;
@@ -130,6 +131,8 @@ public class WavFile {
             findBits();
             logMissingBits();
             findBytes();
+
+            guessMissingBits();
             
             System.out.println("WavFile init done");
         }
@@ -498,6 +501,33 @@ public class WavFile {
     }
     public double get1bitSize() {
         return peakPeriod * (88 / 7.0);
+    }
+
+    private void guessMissingBits() {
+        double bit0size = get0bitSize();
+        double bit1size = get1bitSize();
+        for(WavFile.MissingBitInfo info : missingBits) {
+            double numberOf0 = (info.offsetEnd - info.offsetStart) / bit0size;
+            if ((numberOf0 > 0.9) && (numberOf0 < 1.1)) {
+                // This is 0 that was not detected
+                info.forcedValues.add(0);
+            } else {
+                double numberOf1 = (info.offsetEnd - info.offsetStart) / bit1size;
+                if ((numberOf1 > 0.9) && (numberOf1 < 1.1)) {
+                    // This is 1 that was not detected
+                    info.forcedValues.add(1);
+                }
+            }
+        }
+    }
+    
+    public boolean hasRecoveryErrors() {
+        for(WavFile.MissingBitInfo info : missingBits) {
+            if (info.forcedValues.size() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

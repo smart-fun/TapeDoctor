@@ -164,37 +164,27 @@ public class WavImage extends Canvas {
                 double rightPixel = rightOffset * pixelsPerOffset;
                 double pixelWidth = rightPixel - leftPixel;
                 
-                boolean fixedValue = false;
+                boolean displayDetails = (displayZoom >= 0.99);
                 
-                if (displayZoom >= 0.99) {
+                if (displayDetails) {
                     gc.setFill(Color.BLACK);
                     gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
                     gc.fillText(info.offsetStart + " -> " + info.offsetEnd, leftPixel + 20, HalfHeight * 0.1);
-                    
-                    double bit0size = wavFile.get0bitSize();
-                    double numberOf0 = (info.offsetEnd - info.offsetStart) / bit0size;
-                    if ((numberOf0 > 0.9) && (numberOf0 < 1.1)) {
-                        // This is 0 that was not detected
-                        gc.fillText("This is a 0", leftPixel + 20, HalfHeight * 0.2);
-                        fixedValue = true;
-                    } else {
-                        double bit1size = wavFile.get1bitSize();
-                        double numberOf1 = (info.offsetEnd - info.offsetStart) / bit1size;
-                        if ((numberOf1 > 0.9) && (numberOf1 < 1.1)) {
-                            // This is 1 that was not detected
-                            gc.fillText("This is a 1", leftPixel + 20, HalfHeight * 0.2);
-                            fixedValue = true;
-                        }
-                    }
-                    
                 }
 
-                if (fixedValue) {
-                    gc.setFill(new Color(0,1,0, 0.3));
-                } else {
+                if (info.forcedValues.isEmpty()) {
                     gc.setFill(new Color(1,0,0, 0.3));
-                }
+                } else {
+                    if (displayDetails) {
+                        int value = info.forcedValues.get(0);
+                        gc.setFill(Color.BLACK);
+                        gc.fillText("Guessed is " + value, leftPixel + 20, HalfHeight * 0.2);
+                    }
+                    gc.setFill(new Color(0,1,0, 0.3));
+                }                                        
+                
                 gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);
+
 
             }
             //gc.stroke();

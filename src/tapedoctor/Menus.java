@@ -26,6 +26,7 @@ public class Menus extends MenuBar {
     final private OnMenuListener listener;
     
     private MenuItem saveItem;
+    private MenuItem applyFixesItem;
     private WavFile wavFile;
     
     public Menus(Stage stage, OnMenuListener listener) {
@@ -38,6 +39,11 @@ public class Menus extends MenuBar {
         {
             MenuItem openWavItem = new MenuItem("Open WAV");
             fileMenu.getItems().add(openWavItem);
+            
+            applyFixesItem = new MenuItem("Apply Fixes");
+            applyFixesItem.setVisible(false);
+            fileMenu.getItems().add(applyFixesItem);
+            
             saveItem = new MenuItem("Save ZX81 .P");
             saveItem.setDisable(true);
             fileMenu.getItems().add(saveItem);
@@ -75,6 +81,9 @@ public class Menus extends MenuBar {
     
     public void setCanSave(boolean canSave) {
         saveItem.setDisable(!canSave);
+    }
+        public void displayApplyFixes(boolean visible) {
+        applyFixesItem.setVisible(visible);
     }
     
     private void showAboutDialog() {

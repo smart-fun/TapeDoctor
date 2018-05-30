@@ -66,6 +66,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
 
     @Override
     public void onWavLoaded(WavFile wavFile) {
+        
+        menus.displayApplyFixes(false);
+        
         if (zoomSlider != null) {
             root.getChildren().remove(zoomSlider);
             zoomSlider = null;
@@ -80,6 +83,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         }
         if (wavFile.isSupported()) {
             menus.setCanSave(true);
+            if (wavFile.hasRecoveryErrors()) {
+                menus.displayApplyFixes(true);
+            }
             showWavLoaded(wavFile);
             addZoomSlider();
             addWavImage(wavFile);

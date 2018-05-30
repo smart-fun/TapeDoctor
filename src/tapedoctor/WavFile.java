@@ -289,9 +289,8 @@ public class WavFile {
                 }
                 if (space >= maxSpace) {
                     ++numErrors;
-                    
                     System.out.println("Missing 1 bit after position: " + previous.offsetEnd);
-                    MissingBitInfo missingBit = new MissingBitInfo(previous.offsetEnd + maxSpace, bitInfo.offsetStart);
+                    MissingBitInfo missingBit = new MissingBitInfo(previous.offsetEnd, bitInfo.offsetStart);
                     missingBits.add(missingBit);
                 }
                 previous = bitInfo;

@@ -11,6 +11,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 /**
  *
@@ -165,7 +167,6 @@ public class WavImage extends Canvas {
             // display Bytes
             if (displayZoom >= 0.99) {
                 gc.beginPath();
-                gc.setFill(new Color(1,1,0, 0.3));
                 
                 ArrayList<WavFile.ByteInfo> bytes = wavFile.getBytes();
                 for(WavFile.ByteInfo byteInfo : bytes) {
@@ -182,7 +183,12 @@ public class WavImage extends Canvas {
                     if (leftPixel > screenWidth) {
                         continue;
                     }
-                    gc.fillRect(leftPixel, HalfHeight * 1.6, pixelWidth, HalfHeight*2); 
+                    gc.setFill(new Color(1,1,0, 0.3));
+                    gc.fillRect(leftPixel, HalfHeight * 1.6, pixelWidth, HalfHeight*2);
+                    
+                    gc.setFill(Color.BLACK);
+                    gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                    gc.fillText("" + byteInfo.value, leftPixel + 20, HalfHeight * 1.75);
                 }
                 
                 gc.closePath();
@@ -191,7 +197,6 @@ public class WavImage extends Canvas {
             // display bits
             if (displayZoom >= 0.99) {
                 gc.beginPath();
-                gc.setFill(new Color(0,0,1, 0.3));
                 
                 ArrayList<WavFile.BitInfo> bits = wavFile.getBits();
                 for(WavFile.BitInfo bitInfo : bits) {
@@ -208,7 +213,14 @@ public class WavImage extends Canvas {
                     if (leftPixel > screenWidth) {
                         continue;
                     }
+                    
+                    gc.setFill(new Color(0,0,1, 0.3));
                     gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
+                    
+                    gc.setFill(Color.BLACK);
+                    gc.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+                    gc.fillText("" + bitInfo.value, leftPixel + 20, HalfHeight * 1.95);
+
                 }                
                 
                 gc.closePath();

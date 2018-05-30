@@ -76,15 +76,20 @@ public class WavFile {
         return missingBits;
     }
     
-    private static class ByteInfo {
-        int offset;
+    public static class ByteInfo {
+        int offsetStart;
+        int offsetEnd;  // start of last bit
         int value;
-        private ByteInfo(int offset, int value) {
-            this.offset = offset;
+        private ByteInfo(int offsetStart, int offsetEnd, int value) {
+            this.offsetStart = offsetStart;
+            this.offsetEnd = offsetEnd;
             this.value = value;
         }
     }
     private ArrayList<ByteInfo> byteArray = new ArrayList<>(16384);  // 16K default
+    public ArrayList<ByteInfo> getBytes() {
+        return byteArray;
+    }
             
     public WavFile(File file) {
         
@@ -458,8 +463,9 @@ public class WavFile {
             }
             
             // TODO: check start and end offset respects good timing !
-            BitInfo bitInfo = bitsArray.get(bitArrayPos);
-            ByteInfo byteInfo = new ByteInfo(bitInfo.offset, byteValue);
+            BitInfo bitInfo0 = bitsArray.get(bitArrayPos);
+            BitInfo bitInfo7 = bitsArray.get(bitArrayPos + 7);
+            ByteInfo byteInfo = new ByteInfo(bitInfo0.offset, bitInfo7.offset, byteValue);
             byteArray.add(byteInfo);
             
             bitArrayPos += 8;

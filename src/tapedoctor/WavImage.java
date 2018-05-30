@@ -30,9 +30,21 @@ public class WavImage extends Canvas {
         this.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                double x = event.getX();
-                displayZoom = 1;
-                displayOffset = 50;
+                /*double x = event.getX();
+                double stepZoom0 = wavFile.getNumSamples() / (double)width;
+                double stepZoom100 = 1;
+                double step = (stepZoom100 * displayZoom) + (stepZoom0 * (1 - displayZoom));
+                double samplesOnScreen = step * width;
+                displayOffset += x * samplesOnScreen / width;
+                displayZoom = 1;*/
+                
+                ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
+                if (!missingBits.isEmpty()) {
+                    WavFile.MissingBitInfo firstError = missingBits.get(0);
+                    displayOffset = firstError.offsetStart - 250;
+                    displayZoom = 1;
+                }
+                
                 draw();
             }
             
@@ -41,7 +53,14 @@ public class WavImage extends Canvas {
     
     // 0-100
     public void setOffsetPercent(double offsetPercent) {
-        displayOffset = offsetPercent;
+        double width = getWidth();
+        double stepZoom0 = wavFile.getNumSamples() / (double)width;
+        double stepZoom100 = 1;
+        double step = (stepZoom100 * displayZoom) + (stepZoom0 * (1 - displayZoom));
+        double samplesOnScreen = step * width;
+        double remainingSamples = wavFile.getNumSamples() - samplesOnScreen;
+        final double offset = offsetPercent * remainingSamples / 100;
+        displayOffset = offset;
     }
     
     // 0-1
@@ -77,7 +96,8 @@ public class WavImage extends Canvas {
         
         double samplesOnScreen = step * width;
         double remainingSamples = wavFile.getNumSamples() - samplesOnScreen;
-        final double offset = displayOffset * remainingSamples / 100;
+        //final double offset = displayOffset * remainingSamples / 100;
+        final double offset = displayOffset;
         
         double position = offset;
         for(int x=0; x<width; ++x) {
@@ -113,6 +133,7 @@ public class WavImage extends Canvas {
         double screenWidth = getWidth();
         double offsetWidth = offsetEnd - offsetStart;
         double pixelsPerOffset = screenWidth / offsetWidth;
+        double HalfHeight = getHeight() / 2;
         
         if (missingBits.size() > 0) {
             gc.beginPath(); 
@@ -133,14 +154,40 @@ public class WavImage extends Canvas {
 
                 double rightOffset = end-offsetStart;
                 double rightPixel = rightOffset * pixelsPerOffset;
+                double pixelWidth = rightPixel - leftPixel;
                 
-                gc.moveTo(leftPixel, 0);
-                gc.lineTo(rightPixel, 10);
-               
+                gc.setFill(new Color(1,0,0, 0.3));
+                gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);               
             }
-
-            gc.stroke();
+            //gc.stroke();
             gc.closePath();
+            
+            // display Bytes
+            if (displayZoom >= 0.99) {
+                gc.beginPath();
+                gc.setFill(new Color(1,1,0, 0.3));
+                
+                ArrayList<WavFile.ByteInfo> bytes = wavFile.getBytes();
+                for(WavFile.ByteInfo byteInfo : bytes) {
+                    double leftOffset = byteInfo.offsetStart - offsetStart;
+                    double leftPixel = leftOffset * pixelsPerOffset;
+                    
+                    double rightOffset = byteInfo.offsetEnd - offsetStart;
+                    double rightPixel = rightOffset * pixelsPerOffset;
+                    
+                    double pixelWidth = rightPixel - leftPixel;
+                    if (leftPixel + pixelWidth <= 0) {
+                        continue;
+                    }
+                    if (leftPixel > screenWidth) {
+                        continue;
+                    }
+                    gc.fillRect(leftPixel, HalfHeight * 1.6, pixelWidth, HalfHeight*2); 
+                }
+                
+                gc.closePath();
+            }
+            
         }
     }
     

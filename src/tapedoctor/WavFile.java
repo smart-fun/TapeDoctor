@@ -562,13 +562,55 @@ public class WavFile {
                 --i;
             }
         }
-        Collections.sort(bitsArray, new Comparator<BitInfo>() {
+        sortBitsArray();
+        System.out.println(numFixes + " fixes applied");
+    }
+    
+    public void applyForceBit(int missingBitIndex) {
+        if ((missingBitIndex >= 0) && (missingBitIndex < missingBits.size())) {
+            MissingBitInfo missingBit = missingBits.get(missingBitIndex);
+            double startOffset = missingBit.offsetStart;
+            if (!missingBit.forcedValues.isEmpty()) {
+                int bitValue = missingBit.forcedValues.get(0);
+                if ((bitValue >= 0) && (bitValue <= 1)) {
+                    double bitWidth = (bitValue == 0) ? get0bitSize() : get1bitSize();
+                    BitInfo bitInfo = new BitInfo((int) startOffset, bitValue);
+                    
+                    // Search for other bit that could be useless (like detected 0 inside the forced bit 1)
+                    double endOffset = startOffset + bitWidth;
+                    for(int index=0; index<bitsArray.size(); ++index) {
+                        BitInfo other = bitsArray.get(index);
+                        if ((other.offsetStart >= startOffset) && (other.offsetEnd <= endOffset)) {
+                            bitsArray.remove(index);
+                            --index;
+                        }
+                    }
+
+                    // add the bitInfo
+                    bitsArray.add(bitInfo);
+                    sortBitsArray();
+                    
+                    // keep the remaining missing bits if applies, or remove it
+                    missingBit.forcedValues.clear();
+                    missingBit.offsetStart = (int) endOffset;   // seems a bit too far
+                    
+                    double sizeLimit = peakPeriod * 2.5;
+                    if (missingBit.offsetEnd - missingBit.offsetStart < sizeLimit) {
+                        missingBits.remove(missingBitIndex);
+                    }
+                    
+                }
+            }
+        }
+    }
+    
+    private void sortBitsArray() {
+                Collections.sort(bitsArray, new Comparator<BitInfo>() {
             @Override
             public int compare(BitInfo b1, BitInfo b2) {
                 return b1.offsetStart - b2.offsetStart;
             }            
         });
-        System.out.println(numFixes + " fixes applied");
     }
     
 }

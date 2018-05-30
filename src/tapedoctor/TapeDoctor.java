@@ -264,6 +264,18 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         });
         errorControlBox.getChildren().add(set1);
         
+        Button applyForceBit = new Button("Apply Now");
+        applyForceBit.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                wavFile.applyForceBit(wavImage.getCurrentError());
+                updateCurrentErrorData(wavFile);
+                wavImage.draw();
+            }
+        });
+        errorControlBox.getChildren().add(applyForceBit);
+        
+        
         updateCurrentErrorData(wavFile);
         
     }

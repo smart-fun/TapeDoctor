@@ -41,7 +41,7 @@ public class WavImage extends Canvas {
                 ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
                 if (!missingBits.isEmpty()) {
                     WavFile.MissingBitInfo firstError = missingBits.get(0);
-                    displayOffset = firstError.offsetStart - 250;
+                    displayOffset = firstError.offsetStart - (width / 2);
                     displayZoom = 1;
                 }
                 
@@ -188,6 +188,32 @@ public class WavImage extends Canvas {
                 gc.closePath();
             }
             
+            // display bits
+            if (displayZoom >= 0.99) {
+                gc.beginPath();
+                gc.setFill(new Color(0,0,1, 0.3));
+                
+                ArrayList<WavFile.BitInfo> bits = wavFile.getBits();
+                for(WavFile.BitInfo bitInfo : bits) {
+                    double leftOffset = bitInfo.offsetStart - offsetStart;
+                    double leftPixel = leftOffset * pixelsPerOffset;
+                    
+                    double rightOffset = bitInfo.offsetEnd - offsetStart;
+                    double rightPixel = rightOffset * pixelsPerOffset;
+                    
+                    double pixelWidth = rightPixel - leftPixel;
+                    if (leftPixel + pixelWidth <= 0) {
+                        continue;
+                    }
+                    if (leftPixel > screenWidth) {
+                        continue;
+                    }
+                    gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
+                }                
+                
+                gc.closePath();
+                
+            }            
         }
     }
     

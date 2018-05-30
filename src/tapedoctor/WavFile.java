@@ -53,15 +53,20 @@ public class WavFile {
     private double loPeakAvg = 0;
     private int peakPeriod = 7;
     
-    private static class BitInfo {
-        int offset;
+    public static class BitInfo {
+        int offsetStart;
+        int offsetEnd;
         int value;
-        private BitInfo(int offset, int value) {
-            this.offset = offset;
+        private BitInfo(int offsetStart, int offsetEnd, int value) {
+            this.offsetStart = offsetStart;
+            this.offsetEnd = offsetEnd;
             this.value = value;
         }
     }
     private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
+    public ArrayList<BitInfo> getBits() {
+        return bitsArray;
+    }
     
     public static class MissingBitInfo {
         int offsetStart;
@@ -275,7 +280,7 @@ public class WavFile {
             if (previous == null) {
                 previous = bitInfo;
             } else {
-                int space = bitInfo.offset - previous.offset;
+                int space = bitInfo.offsetStart - previous.offsetStart; // TODO: use previous.offsetEnd
                 int maxSpace;
                 if (previous.value == 0) {  // previous is a bit 0
                     maxSpace = peakPeriod * (4 + 6);
@@ -285,8 +290,8 @@ public class WavFile {
                 if (space >= maxSpace) {
                     ++numErrors;
                     
-                    System.out.println("Missing 1 bit after position: " + previous.offset);
-                    MissingBitInfo missingBit = new MissingBitInfo(previous.offset + maxSpace, bitInfo.offset);
+                    System.out.println("Missing 1 bit after position: " + previous.offsetEnd);
+                    MissingBitInfo missingBit = new MissingBitInfo(previous.offsetEnd + maxSpace, bitInfo.offsetStart);
                     missingBits.add(missingBit);
                 }
                 previous = bitInfo;
@@ -424,7 +429,7 @@ public class WavFile {
                 int numLow0 = getNumLowPeaks(startBit, endBit0);
                 if ((numHigh0 == 4) && (numLow0 == 4)) {
                     // this is a 0 bit
-                    BitInfo bitInfo = new BitInfo(startBit, 0);
+                    BitInfo bitInfo = new BitInfo(startBit, endBit0, 0);
                     bitsArray.add(bitInfo);
                     return endBit0;
                 }
@@ -441,7 +446,7 @@ public class WavFile {
                 int numLow1 = getNumLowPeaks(startBit, endBit1);
                 if ((numHigh1 == 9) && (numLow1 == 9)) {
                     // this is a 1 bit
-                    BitInfo bitInfo = new BitInfo(startBit, 1);
+                    BitInfo bitInfo = new BitInfo(startBit, endBit1, 1);
                     bitsArray.add(bitInfo);
                     return endBit1;
                 }
@@ -465,7 +470,7 @@ public class WavFile {
             // TODO: check start and end offset respects good timing !
             BitInfo bitInfo0 = bitsArray.get(bitArrayPos);
             BitInfo bitInfo7 = bitsArray.get(bitArrayPos + 7);
-            ByteInfo byteInfo = new ByteInfo(bitInfo0.offset, bitInfo7.offset, byteValue);
+            ByteInfo byteInfo = new ByteInfo(bitInfo0.offsetStart, bitInfo7.offsetEnd, byteValue);
             byteArray.add(byteInfo);
             
             bitArrayPos += 8;

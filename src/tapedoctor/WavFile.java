@@ -280,17 +280,15 @@ public class WavFile {
             if (previous == null) {
                 previous = bitInfo;
             } else {
-                int space = bitInfo.offsetStart - previous.offsetStart; // TODO: use previous.offsetEnd
-                int maxSpace;
-                if (previous.value == 0) {  // previous is a bit 0
-                    maxSpace = peakPeriod * (4 + 6);
-                } else {                    // previous is a bit 1
-                    maxSpace = peakPeriod * (9 + 6);
-                }
-                if (space >= maxSpace) {
+                
+                double previousSize = (previous.value == 0) ? get0bitSize() : get1bitSize();
+                int endOfPrevious = (int) (previous.offsetStart + previousSize);
+                int startOfNext = bitInfo.offsetStart - peakPeriod;                
+                int space = startOfNext - endOfPrevious;
+                if (space >= peakPeriod * 3) {
                     ++numErrors;
-                    System.out.println("Missing 1 bit after position: " + previous.offsetEnd);
-                    MissingBitInfo missingBit = new MissingBitInfo(previous.offsetEnd, bitInfo.offsetStart);
+                    System.out.println("Missing 1 bit after position: " + endOfPrevious);
+                    MissingBitInfo missingBit = new MissingBitInfo(endOfPrevious, startOfNext);
                     missingBits.add(missingBit);
                 }
                 previous = bitInfo;
@@ -493,6 +491,13 @@ public class WavFile {
             Logger.getLogger(WavFile.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
         }
+    }
+    
+    public double get0bitSize() {
+        return peakPeriod * (53 / 7.0);
+    }
+    public double get1bitSize() {
+        return peakPeriod * (88 / 7.0);
     }
     
 }

@@ -141,6 +141,7 @@ public class WavImage extends Canvas {
             gc.beginPath(); 
             gc.setStroke(Color.RED);
             
+            // display missing bits areas
             for(WavFile.MissingBitInfo info : missingBits) {
                 int start = info.offsetStart;
                 if (start >= offsetEnd) {

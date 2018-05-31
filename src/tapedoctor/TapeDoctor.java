@@ -30,7 +30,7 @@ import tapedoctor.WavFile.MissingBitInfo;
  *
  * @author aguyon
  */
-public class TapeDoctor extends Application implements Menus.OnMenuListener {
+public class TapeDoctor extends Application implements Menus.OnMenuListener, WavImage.OnWavImageListener {
     
     public static final String version = "0.0.1";
     
@@ -38,8 +38,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private Stage stage;
     
     private Menus menus;
-    private Slider zoomSlider;
     private Slider offsetSlider;
+    private boolean justForcedOffsetSlider = false;
     private WavImage wavImage;
     
     private HBox errorControlBox;
@@ -83,12 +83,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     @Override
     public void onWavLoaded(WavFile wavFile) {
         
-        menus.displayApplyFixes(false);
-        
-        if (zoomSlider != null) {
-            root.getChildren().remove(zoomSlider);
-            zoomSlider = null;
-        }
         if (offsetSlider != null) {
             root.getChildren().remove(offsetSlider);
             offsetSlider = null;
@@ -106,15 +100,13 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             showWavLoaded(wavFile);
             addWavImage(wavFile);
             addOffsetSlider();
-            if (wavFile.hasRecoveryErrors()) {
-                menus.displayApplyFixes(true);
+            wavFile.applyAutoFixes();
+            if (wavFile.getNumErrors() > 0) {                
                 errorControlBox = new HBox();
                 errorControlBox.setSpacing(10.0);
                 errorControlBox.setAlignment(Pos.CENTER);
                 root.getChildren().add(errorControlBox);
                 updateErrorControlBox(wavFile);
-            } else {
-                
             }
             stage.setTitle(wavFile.getFileName());
         } else {
@@ -147,7 +139,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     }
     
     private void addWavImage(WavFile wavFile) {
-        wavImage = new WavImage(screenWidth, 256, wavFile);
+        wavImage = new WavImage(screenWidth, 256, wavFile, this);
         root.getChildren().add(wavImage);
         if (wavFile.getNumErrors() > 0) {
             wavImage.jumpToNextError(); // draw is already called here
@@ -162,7 +154,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         Slider slider = new Slider();
         slider.setMin(0);
         slider.setMax(100);
-        slider.setValue(0);
+        slider.setValue(wavImage.getDisplayPercent());
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         //slider.setMajorTickUnit(50);
@@ -174,10 +166,11 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         @Override
             public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
                 double offsetValue = (double) newValue;
-                if (wavImage != null) {
+                if (wavImage != null && !justForcedOffsetSlider) {
                     wavImage.setOffsetPercent(offsetValue);
                     wavImage.draw();
                 }
+                justForcedOffsetSlider = false;
             }
         });
         
@@ -195,13 +188,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         if (file != null) {
             wavFile.save(file);
         }
-    }
-
-    @Override
-    public void onApplyFixes(WavFile wavFile) {
-        wavFile.applyFixes();
-        wavImage.draw();
-        updateErrorControlBox(wavFile);
     }
     
     private void updateErrorControlBox(WavFile wavFile) {
@@ -311,5 +297,13 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
             wavImage.draw();
         }
     }
-    
+
+    @Override
+    public void onWavMovedPercent(double offsetPercent) {
+        if (offsetSlider != null) {
+            justForcedOffsetSlider = true;
+            offsetSlider.setValue(offsetPercent);
+        }
+    }
+
 }

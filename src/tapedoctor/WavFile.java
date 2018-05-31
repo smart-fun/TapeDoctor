@@ -552,7 +552,7 @@ public class WavFile {
             }
         }
     }
-    
+/*    
     public boolean hasRecoveryErrors() {
         for(MissingBitInfo info : missingBits) {
             if (info.forcedValues.size() > 0) {
@@ -561,8 +561,8 @@ public class WavFile {
         }
         return false;
     }
-    
-    public void applyFixes() {
+*/  
+    public void applyAutoFixes() {
         int numFixes = 0;
         for(int i=0; i<missingBits.size(); ++i) {
             MissingBitInfo info = missingBits.get(i);

@@ -26,13 +26,14 @@ public class WavImage extends Canvas {
     private WavFile wavFile;
     private double displayOffset = 0;
     private int currentError = -1;
-    
+    private OnWavImageListener listener;
     private double dragPreviousX = 0;
     
-    public WavImage(int width, int height, WavFile wavFile) {
+    public WavImage(int width, int height, WavFile wavFile, OnWavImageListener listener) {
         super(width, height);
         
         this.wavFile = wavFile;
+        this.listener = listener;
         
         this.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
             @Override
@@ -46,8 +47,10 @@ public class WavImage extends Canvas {
                     if (displayOffset < 0) {
                         displayOffset = 0;
                     } else if (displayOffset >= wavFile.getNumSamples() - width) {
-                        displayOffset = wavFile.getNumSamples() - width;
+                        displayOffset = wavFile.getNumSamples() - width;                        
                     }
+                    double offsetPercent = offsetToPercent(displayOffset);
+                    listener.onWavMovedPercent(offsetPercent);
                     draw();
                 } else {
                     dragPreviousX = event.getX();
@@ -55,6 +58,13 @@ public class WavImage extends Canvas {
             }
         });
         
+    }
+    
+    private double offsetToPercent(double offset) {
+        return (100*offset) / (wavFile.getNumSamples() - getWidth());
+    }
+    private double percentToOffset(double percent) {
+        return percent * (wavFile.getNumSamples() - getWidth()) / 100;
     }
     
     public int getCurrentError() {
@@ -97,6 +107,8 @@ public class WavImage extends Canvas {
             WavFile.MissingBitInfo firstError = missingBits.get(currentError);
             displayOffset = firstError.offsetStart - (getWidth() * 0.4);
             draw();
+            double percent = offsetToPercent(displayOffset);
+            listener.onWavMovedPercent(percent);
         }
     }
     
@@ -110,8 +122,15 @@ public class WavImage extends Canvas {
     
     // 0-100
     public void setOffsetPercent(double offsetPercent) {
-        double width = getWidth();
-        displayOffset = offsetPercent * (wavFile.getNumSamples() - width) / 100;
+        displayOffset = percentToOffset(offsetPercent);
+    }
+    
+    public double getDisplayOffset() {
+        return displayOffset;
+    }
+
+    public double getDisplayPercent() {
+        return offsetToPercent(displayOffset);
     }
     
     public void draw() {
@@ -288,6 +307,10 @@ public class WavImage extends Canvas {
 
         gc.closePath();
 
+    }
+    
+    public interface OnWavImageListener {
+        void onWavMovedPercent(double offsetPercent);
     }
     
 }

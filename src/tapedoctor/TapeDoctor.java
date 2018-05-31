@@ -181,6 +181,10 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
     public void onSavePressed(WavFile wavFile) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Program");
+        String programName = wavFile.getProgramName();
+        if (programName.length() > 0) {
+            fileChooser.setInitialFileName(programName + ".p");
+        }
         fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter(".P Programs", "*.p"),
             new FileChooser.ExtensionFilter("All Files", "*.*"));

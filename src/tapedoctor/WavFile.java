@@ -518,11 +518,24 @@ public class WavFile {
     }
     
     public void save(File file) {
-        byte[] buffer = new byte[byteArray.size()];
-        int pos = 0;
-        for(ByteInfo byteInfo : byteArray) {
-            buffer[pos] = (byte) byteInfo.value;
-            ++pos;
+        
+        if (byteArray.size() == 0) {
+            return;
+        }
+        
+        // Skip NAME
+        int offset = 0;
+        int value;
+        do {
+            value = byteArray.get(offset).value;
+            ++offset;
+        } while((value < 128) && (offset < byteArray.size()));
+
+        // Copy DATA
+        byte[] buffer = new byte[byteArray.size() - offset];
+        for(int pos=offset; pos<byteArray.size(); ++pos) {
+            ByteInfo byteInfo = byteArray.get(pos);
+            buffer[pos - offset] = (byte) byteInfo.value;
         }
         try {
             FileOutputStream fos = new FileOutputStream(file);

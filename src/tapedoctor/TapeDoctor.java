@@ -72,7 +72,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         if (bigEndian) {
             System.out.println("BIG ENDIAN SYSTEM");
         } else {
-            System.out.println("LITTLE ENDIAN SYSTEM"); // win7 intel i5
+            System.out.println("LITTLE ENDIAN SYSTEM"); // win7 intel i5, Mac intel i7
         }
     }
 
@@ -191,9 +191,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         slider.setValue(offsetValue);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(50);
-        slider.setMinorTickCount(5);
-        slider.setBlockIncrement(10);
+        //slider.setMajorTickUnit(50);
+        //slider.setMinorTickCount(5);
+        //slider.setBlockIncrement(10);
         root.getChildren().add(slider);
         
         slider.valueProperty().addListener(new ChangeListener() {

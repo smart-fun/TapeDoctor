@@ -28,24 +28,38 @@ public class WavImage extends Canvas {
     private double displayZoom = 0;
     private int currentError = -1;
     
+    private double dragPreviousX = 0;
+    
     public WavImage(int width, int height, WavFile wavFile) {
         super(width, height);
         
         this.wavFile = wavFile;
         
-        this.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+        this.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                /*double x = event.getX();
-                double stepZoom0 = wavFile.getNumSamples() / (double)width;
-                double stepZoom100 = 1;
-                double step = (stepZoom100 * displayZoom) + (stepZoom0 * (1 - displayZoom));
-                double samplesOnScreen = step * width;
-                displayOffset += x * samplesOnScreen / width;
-                displayZoom = 1;*/
+                if (displayZoom > 0.99) {                    
+                    boolean click = event.isPrimaryButtonDown();
+                    if (click) {
+                        double x = event.getX();
+                        double move = x - dragPreviousX;
+                        dragPreviousX = x;
+                        displayOffset -= move;
+                        if (displayOffset < 0) {
+                            displayOffset = 0;
+                        } else if (displayOffset >= wavFile.getNumSamples() - width) {
+                            displayOffset = wavFile.getNumSamples() - width;
+                        }
+                        draw();
+                    } else {
+                        dragPreviousX = event.getX();
+                    }
+                }
+
             }
             
         });
+        
     }
     
     public int getCurrentError() {

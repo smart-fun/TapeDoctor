@@ -43,10 +43,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
     private WavImage wavImage;
     
     private HBox errorControlBox;
-    
-    private double zoomValue = 0;
-    private double offsetValue = 0;
-    
+        
     private int screenWidth = 640;
     
     private Label currentErrorSize;
@@ -107,7 +104,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         if (wavFile.isSupported()) {
             menus.setCanSave(true);
             showWavLoaded(wavFile);
-            addZoomSlider();
             addWavImage(wavFile);
             addOffsetSlider();
             if (wavFile.hasRecoveryErrors()) {
@@ -117,7 +113,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
                 errorControlBox.setAlignment(Pos.CENTER);
                 root.getChildren().add(errorControlBox);
                 updateErrorControlBox(wavFile);
-            }            
+            } else {
+                
+            }
             stage.setTitle(wavFile.getFileName());
         } else {
             menus.setCanSave(false);
@@ -154,41 +152,17 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         if (wavFile.getNumErrors() > 0) {
             wavImage.jumpToNextError(); // draw is already called here
         } else {
+            wavImage.setOffset(wavFile.getFirstByteOffset());
             wavImage.draw();
         }
         
-    }
-    
-    private void addZoomSlider() {
-        Slider slider = new Slider();
-        slider.setMin(0);
-        slider.setMax(1);
-        slider.setValue(zoomValue);
-        slider.setShowTickLabels(true);
-        slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(0.5);
-        slider.setMinorTickCount(5);
-        slider.setBlockIncrement(0.1);
-        root.getChildren().add(slider);
-        
-        slider.valueProperty().addListener(new ChangeListener() {
-        @Override
-            public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
-                zoomValue = (double) newValue;
-                if (wavImage != null) {
-                    wavImage.setZoom(zoomValue);
-                    wavImage.draw();
-                }
-            }
-        });
-        zoomSlider = slider;
     }
     
     private void addOffsetSlider() {
         Slider slider = new Slider();
         slider.setMin(0);
         slider.setMax(100);
-        slider.setValue(offsetValue);
+        slider.setValue(0);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         //slider.setMajorTickUnit(50);
@@ -199,7 +173,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         slider.valueProperty().addListener(new ChangeListener() {
         @Override
             public void changed(ObservableValue arg0, Object oldValue, Object newValue) {
-                offsetValue = (double) newValue;
+                double offsetValue = (double) newValue;
                 if (wavImage != null) {
                     wavImage.setOffsetPercent(offsetValue);
                     wavImage.draw();

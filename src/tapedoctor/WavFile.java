@@ -112,6 +112,13 @@ public class WavFile {
     public ArrayList<ByteInfo> getBytes() {
         return byteArray;
     }
+    public int getFirstByteOffset() {
+        if (byteArray.isEmpty()) {
+            return 0;
+        } else {
+            return byteArray.get(0).offsetStart;
+        }
+    }
     
     public WavFile(File file) {
         

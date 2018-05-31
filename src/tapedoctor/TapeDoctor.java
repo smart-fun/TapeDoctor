@@ -6,13 +6,13 @@
 package tapedoctor;
 
 import java.io.File;
+import java.nio.ByteOrder;
 import javafx.application.Application;
 //import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -67,6 +67,13 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener {
         primaryStage.setTitle("Tape Doctor v" + version);
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        boolean bigEndian = (ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN));
+        if (bigEndian) {
+            System.out.println("BIG ENDIAN SYSTEM");
+        } else {
+            System.out.println("LITTLE ENDIAN SYSTEM"); // win7 intel i5
+        }
     }
 
     /**

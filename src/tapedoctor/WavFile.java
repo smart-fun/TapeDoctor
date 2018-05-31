@@ -400,9 +400,18 @@ public class WavFile {
 
     private int getNumPeaks(HashSet<Integer> peaks, int startPos, int endPos) {
         int count = 0;
+        int tolerance = (int) (peakPeriod * 1.5f);
+        int previousPeakPosition = -1;
         for(int pos=startPos; pos<endPos; ++pos) {
             if (peaks.contains(pos)) {
                 ++count;
+                if (previousPeakPosition != -1) {   // also checks peaks are more or less at the right period
+                    int distance = pos - previousPeakPosition;
+                    if (distance > tolerance) {
+                        return 0;   // too far !
+                    }
+                }
+                previousPeakPosition = pos;
             }
         }
         return count;
@@ -436,7 +445,7 @@ public class WavFile {
     }
     
     private int findNextBit(int startPos) {
-        int pos = findNextHighPeak(startPos);
+        final int pos = findNextHighPeak(startPos);
         if (pos >= 0) {
             int startBit = pos;
             //double numSamples0 = 7 * 6 * sampleRate / 22050;    // 7 values per sample in 22Khz, 4 peaks + blank for 0

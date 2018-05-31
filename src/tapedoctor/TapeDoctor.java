@@ -100,6 +100,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             addWavImage(wavFile);
             addOffsetSlider();
             wavFile.applyAutoFixes();
+            wavImage.draw();
             if (wavFile.getNumErrors() > 0) {                
                 errorControlBox = new HBox();
                 errorControlBox.setSpacing(10.0);

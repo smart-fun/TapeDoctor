@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-// TODO: check if 4 peaks is 0 and 9 peaks is 1, or the contrary
 package tapedoctor;
 
 import java.io.File;
@@ -517,10 +516,10 @@ public class WavFile {
     
     }
     
-    public void save(File file) {
+    public boolean save(File file) {
         
         if (byteArray.size() == 0) {
-            return;
+            return false;
         }
         
         // Skip NAME
@@ -542,8 +541,10 @@ public class WavFile {
             fos.write(buffer, 0, buffer.length);
             fos.flush();
             fos.close();
+            return true;
         } catch (IOException ex) {
             Logger.getLogger(WavFile.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         } finally {
         }
     }
@@ -572,16 +573,7 @@ public class WavFile {
             }
         }
     }
-/*    
-    public boolean hasRecoveryErrors() {
-        for(MissingBitInfo info : missingBits) {
-            if (info.forcedValues.size() > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-*/  
+
     public void applyAutoFixes() {
         int numFixes = 0;
         for(int i=0; i<missingBits.size(); ++i) {
@@ -657,6 +649,9 @@ public class WavFile {
             int zxchar = byteInfo.value;
             name += ZX81CharSet.getAsciiChar(zxchar);
             if (zxchar >= 128) {
+                break;
+            }
+            if (name.length() >= 100) {
                 break;
             }
         }

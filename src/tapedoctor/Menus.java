@@ -82,7 +82,9 @@ public class Menus extends MenuBar {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("About");
         alert.setHeaderText(null);
-        alert.setContentText("Tape Doctor v" + TapeDoctor.version + "\n© 2018 Arnaud Guyon");
+        String text = "Tape Doctor v" + TapeDoctor.VERSION + "\n© 2018 Arnaud Guyon";
+        text += "\n\nReads ZX81 Programs recorded in WAV format, and converts them into .p files for ZX81 emulators.";
+        alert.setContentText(text);
         alert.showAndWait();
     }
     

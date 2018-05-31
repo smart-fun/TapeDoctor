@@ -8,7 +8,6 @@ package tapedoctor;
 import java.io.File;
 import java.nio.ByteOrder;
 import javafx.application.Application;
-//import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -32,7 +31,7 @@ import tapedoctor.WavFile.MissingBitInfo;
  */
 public class TapeDoctor extends Application implements Menus.OnMenuListener, WavImage.OnWavImageListener {
     
-    public static final String version = "0.0.1";
+    public static final String VERSION = "0.8.0";
     
     private VBox root;
     private Stage stage;
@@ -52,7 +51,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
     public void start(Stage primaryStage) {
         
         stage = primaryStage;
-        //StackPane root = new StackPane();
         root = new VBox();
         menus = new Menus(primaryStage, this);
         root.getChildren().add(menus);
@@ -61,7 +59,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
         
         Scene scene = new Scene(root, screenWidth, 450);
         
-        primaryStage.setTitle("Tape Doctor v" + version);
+        primaryStage.setTitle("Tape Doctor v" + VERSION);
         primaryStage.setScene(scene);
         primaryStage.show();
         
@@ -108,7 +106,12 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 root.getChildren().add(errorControlBox);
                 updateErrorControlBox(wavFile);
             }
-            stage.setTitle(wavFile.getFileName());
+            String title = wavFile.getFileName();
+            String programName = wavFile.getProgramName();
+            if (programName.length() > 0) {
+                title += " (" + programName + ")";
+            }
+            stage.setTitle(title);
         } else {
             menus.setCanSave(false);
             showWavNotSupported(wavFile);
@@ -190,8 +193,23 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             new FileChooser.ExtensionFilter("All Files", "*.*"));
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
-            wavFile.save(file);
+            boolean success = wavFile.save(file);
+            displayFileSaved(success, wavFile);
         }
+    }
+    
+    private void displayFileSaved(boolean success, WavFile wavFile) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        if (success) {
+            alert.setTitle("File Saved");
+            alert.setHeaderText(null);
+            alert.setContentText("The file has been correctly saved");
+        } else {
+            alert.setTitle("File Error");
+            alert.setHeaderText("The file has not been saved correctly");
+            alert.setContentText("A problem occurred, please try again later");
+        }
+        alert.showAndWait();
     }
     
     private void updateErrorControlBox(WavFile wavFile) {

@@ -146,7 +146,10 @@ public class WavFile {
             searchPeaks();
             System.out.println("Peak Amplitude: " + minPeak + " to " + maxPeak);
             resample();
+            
             //resampleDynamic();
+            searchPeaks();
+            System.out.println("Peak Amplitude: " + minPeak + " to " + maxPeak);
             
             computePeakPeriod();
             findBits();
@@ -272,6 +275,8 @@ public class WavFile {
     private void searchPeaks() {
         hiPeaks.clear();
         loPeaks.clear();
+        maxPeak = 0;
+        minPeak = 0;
         int peakOffset = 0;
         double peakValue = convertedSamples[0];
         boolean increasing = convertedSamples[1] > convertedSamples[0];
@@ -440,7 +445,7 @@ public class WavFile {
                 int endBit0 = startBit + (int)numSamples0;
                 int numHigh0 = getNumHighPeaks(startBit, endBit0);
                 int numLow0 = getNumLowPeaks(startBit, endBit0);
-                if ((numHigh0 == 4) && (numLow0 == 4)) {
+                if ((numHigh0 == 4)) {// && (numLow0 == 4)) {
                     // this is a 0 bit
                     BitInfo bitInfo = new BitInfo(startBit, 0);
                     bitsArray.add(bitInfo);
@@ -457,7 +462,7 @@ public class WavFile {
                 int endBit1 = startBit + (int)numSamples1;
                 int numHigh1 = getNumHighPeaks(startBit, endBit1);
                 int numLow1 = getNumLowPeaks(startBit, endBit1);
-                if ((numHigh1 == 9) && (numLow1 == 9)) {
+                if ((numHigh1 == 9)) { // && (numLow1 == 9)) {
                     // this is a 1 bit
                     BitInfo bitInfo = new BitInfo(startBit, 1);
                     bitsArray.add(bitInfo);

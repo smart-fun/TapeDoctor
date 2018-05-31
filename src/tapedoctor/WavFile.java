@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 public class WavFile {
     
     private static final double PEAK_THRESHOLD = 0.01;
-    private static final double WAVE_AMPLITUDE = 0.6;
+    private static final double WAVE_AMPLITUDE = 0.8;
     private static final double BAUDS = 400;
     
     private byte[] fileBuffer;
@@ -49,8 +49,8 @@ public class WavFile {
     private double[] convertedSamples;
     private HashSet<Integer> hiPeaks = new HashSet<>();
     private HashSet<Integer> loPeaks = new HashSet<>();
-    private double hiPeakAvg = 0;
-    private double loPeakAvg = 0;
+    private double minPeak = 0;
+    private double maxPeak = 0;
     private static int peakPeriod = 7;
     
     public static class BitInfo {
@@ -144,10 +144,9 @@ public class WavFile {
             
             convertSamples();
             searchPeaks();
-            System.out.println("First Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
+            System.out.println("Peak Amplitude: " + minPeak + " to " + maxPeak);
             resample();
             //resampleDynamic();
-            System.out.println("Second Pass Peaks, Low Average: " + loPeakAvg + ", High Average: " + hiPeakAvg);
             
             computePeakPeriod();
             findBits();
@@ -282,15 +281,12 @@ public class WavFile {
                 if (currentValue > peakValue) {
                     peakValue = currentValue;
                     peakOffset = pos;
+                    if (currentValue > maxPeak) {
+                        maxPeak = currentValue;
+                    }
                 } else {
                     if (currentValue < peakValue - PEAK_THRESHOLD) {
                         hiPeaks.add(peakOffset);
-                        if (hiPeakAvg == 0) {
-                            hiPeakAvg = peakValue;
-                        } else {
-                            int numPeaks = hiPeaks.size();
-                            hiPeakAvg = ((hiPeakAvg * (numPeaks-1)) + peakValue) / numPeaks;
-                        }
                         increasing = false;
                         peakOffset = pos;
                         peakValue = currentValue;
@@ -300,15 +296,13 @@ public class WavFile {
                 if (currentValue < peakValue) {
                     peakValue = currentValue;
                     peakOffset = pos;
+                    if (currentValue < minPeak) {
+                        minPeak = currentValue;
+                    }
+
                 } else {
                     if (currentValue > peakValue + PEAK_THRESHOLD) {
                         loPeaks.add(peakOffset);
-                        if (loPeakAvg == 0) {
-                            loPeakAvg = peakValue;
-                        } else {
-                            int numPeaks = loPeaks.size();
-                            loPeakAvg = ((loPeakAvg * (numPeaks-1)) + peakValue) / numPeaks;
-                        }
                         increasing = true;
                         peakOffset = pos;
                         peakValue = currentValue;                        
@@ -347,7 +341,7 @@ public class WavFile {
     
     // resample with peaks information
     private void resample() {
-        double amplitude = hiPeakAvg - loPeakAvg;
+        double amplitude = (maxPeak - minPeak); // hiPeakAvg - loPeakAvg;
         double multiplier = WAVE_AMPLITUDE / amplitude;
         for(int pos=0; pos<numSamples; ++pos) {
             double currentValue = convertedSamples[pos];
@@ -356,30 +350,6 @@ public class WavFile {
         }
     }
     
-    // resample with peaks information
-    /*
-    private void resampleDynamic() {
-        double hiPeakSmooth = hiPeakAvg;
-        double loPeakSmooth = loPeakAvg;
-        for(int pos=0; pos<numSamples; ++pos) {
-
-            double currentValue = convertedSamples[pos];
-
-            if (hiPeaks.contains(pos)) {
-                hiPeakSmooth = ((hiPeakSmooth * 3) + currentValue) / 4;   // Smooth peak amplitude
-            }
-            //if (loPeaks.contains(pos)) {
-            //    loPeakSmooth = ((loPeakSmooth * 3) + currentValue) / 4;   // Smooth peak amplitude
-            //}
-
-            double amplitude = hiPeakSmooth - loPeakSmooth;
-            double multiplier = WAVE_AMPLITUDE / amplitude;
-            currentValue = currentValue * multiplier;
-            convertedSamples[pos] = currentValue;
-        }
-    }
-*/
-
     private void computePeakPeriod() {
         // put in hashmap the number of samples between peaks (period), number of times we have this period
         // then find the mose used period

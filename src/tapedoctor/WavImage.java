@@ -169,9 +169,9 @@ public class WavImage extends Canvas {
             if (wavFile.isHighPeak((int) position)) {
                 gc.moveTo(x, 0);
                 gc.lineTo(x, Math.max(midHeight * 0.15, y));
-            } else if (wavFile.isLowPeak((int) position)) {
-                gc.moveTo(x, height);
-                gc.lineTo(x, Math.min(height * 0.9, y));
+            //} else if (wavFile.isLowPeak((int) position)) {
+            //    gc.moveTo(x, height);
+            //    gc.lineTo(x, Math.min(height * 0.9, y));
             }
             gc.moveTo(x, y);
         }
@@ -180,10 +180,10 @@ public class WavImage extends Canvas {
         
         gc.closePath();
         
-        showErrors(gc);        
+        showDetails(gc);        
     }
     
-    private void showErrors(GraphicsContext gc) {
+    private void showDetails(GraphicsContext gc) {
         
         ArrayList<WavFile.MissingBitInfo> missingBits = wavFile.getMissingBits();
         

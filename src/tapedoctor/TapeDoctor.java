@@ -83,6 +83,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
     @Override
     public void onWavLoaded(WavFile wavFile) {
         
+        menus.setCanSave(false);
         if (offsetSlider != null) {
             root.getChildren().remove(offsetSlider);
             offsetSlider = null;
@@ -96,8 +97,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             errorControlBox = null;
         }
         if (wavFile.isSupported()) {
-            menus.setCanSave(true);
-
             addWavImage(wavFile);
             addOffsetSlider();
             wavFile.applyAutoFixes();
@@ -107,6 +106,8 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 errorControlBox.setAlignment(Pos.CENTER);
                 root.getChildren().add(errorControlBox);
                 updateErrorControlBox(wavFile);
+            } else {
+                menus.setCanSave(true);
             }
             String title = wavFile.getFileName();
             String programName = wavFile.getProgramName();
@@ -114,11 +115,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 title += " (" + programName + ")";
             }
             stage.setTitle(title);
-            
-                        showWavLoaded(wavFile);
+            showWavLoaded(wavFile);
 
         } else {
-            menus.setCanSave(false);
             showWavNotSupported(wavFile);
         }
     }
@@ -155,7 +154,6 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             wavImage.setOffset(wavFile.getFirstByteOffset());
             wavImage.draw();
         }
-        
     }
     
     private void addOffsetSlider() {
@@ -283,6 +281,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 }
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
+                if (wavFile.getNumErrors() == 0) {
+                    menus.setCanSave(true);
+                }
             }
         });
         errorControlBox.getChildren().add(applyForceBit);
@@ -297,6 +298,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 wavImage.unselectCurrent();
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
+                if (wavFile.getNumErrors() == 0) {
+                    menus.setCanSave(true);
+                }
             }
         });
         errorControlBox.getChildren().add(deleteZone);

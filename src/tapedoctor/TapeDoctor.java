@@ -18,6 +18,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -35,6 +36,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
     
     private VBox root;
     private Stage stage;
+    private Scene scene;
     
     private Menus menus;
     private Slider offsetSlider;
@@ -50,14 +52,14 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
     @Override
     public void start(Stage primaryStage) {
         
+        screenWidth = (int) Screen.getPrimary().getVisualBounds().getWidth();
+
         stage = primaryStage;
         root = new VBox();
-        menus = new Menus(primaryStage, this);
-        root.getChildren().add(menus);
-        
-        screenWidth = (int) Screen.getPrimary().getVisualBounds().getWidth();
-        
-        Scene scene = new Scene(root, screenWidth, 450);
+        scene = new Scene(root, screenWidth, 400);
+
+        menus = new Menus(primaryStage, scene, this);
+        root.getChildren().add(menus);        
         
         primaryStage.setTitle("Tape Doctor v" + VERSION);
         primaryStage.setScene(scene);
@@ -95,7 +97,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
         }
         if (wavFile.isSupported()) {
             menus.setCanSave(true);
-            showWavLoaded(wavFile);
+
             addWavImage(wavFile);
             addOffsetSlider();
             wavFile.applyAutoFixes();
@@ -112,6 +114,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
                 title += " (" + programName + ")";
             }
             stage.setTitle(title);
+            
+                        showWavLoaded(wavFile);
+
         } else {
             menus.setCanSave(false);
             showWavNotSupported(wavFile);
@@ -225,6 +230,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(previous);
+        previous.setTooltip(new Tooltip("Goes to previous Error"));
 
         Button next = new Button(">>");
         next.setOnAction(new EventHandler<ActionEvent>() {
@@ -235,9 +241,10 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(next);
+        next.setTooltip(new Tooltip("Goes to next Error"));
         
         currentErrorSize = new Label("");
-        currentErrorSize.setMinWidth(200);
+        currentErrorSize.setMinWidth(150);
 
         //currentErrorSize.setBoundsType(TextBoundsType.VISUAL);
         errorControlBox.getChildren().add(currentErrorSize);
@@ -251,6 +258,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(set0);
+        set0.setTooltip(new Tooltip("Forces the first bit of the Error to 0"));
         
         Button set1 = new Button("Set 1 bit");
         set1.setOnAction(new EventHandler<ActionEvent>() {
@@ -261,8 +269,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(set1);
+        set1.setTooltip(new Tooltip("Forces the first bit of the Error to 1"));
         
-        Button applyForceBit = new Button("Apply Now");
+        Button applyForceBit = new Button("Apply bit set");
         applyForceBit.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -277,8 +286,9 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(applyForceBit);
+        applyForceBit.setTooltip(new Tooltip("Applies the bit set (0 or 1) to the curve"));
         
-        Button deleteZone = new Button("DELETE!");
+        Button deleteZone = new Button("DELETE");
         deleteZone.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -290,6 +300,7 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             }
         });
         errorControlBox.getChildren().add(deleteZone);
+        deleteZone.setTooltip(new Tooltip("Deletes the error (some bits may be missing)"));
         
         updateCurrentErrorData(wavFile);
         

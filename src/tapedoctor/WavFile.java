@@ -211,8 +211,14 @@ public class WavFile {
         
         String programName = getProgramName();
         if (programName.length() > 0) {
-            builder.append("\n\nProgram: ");
+            builder.append("\n\nZX81 Program: ");
             builder.append(programName);
+        }
+        int numErrors = getNumErrors();
+        if (numErrors > 0) {
+            builder.append("\n");
+            builder.append(numErrors);
+            builder.append(" error(s) to fix");
         }
         
         return builder.toString();

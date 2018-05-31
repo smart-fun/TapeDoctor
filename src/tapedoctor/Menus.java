@@ -7,6 +7,8 @@ package tapedoctor;
 
 import java.io.File;
 import javafx.event.ActionEvent;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Menu;
@@ -28,7 +30,7 @@ public class Menus extends MenuBar {
     private MenuItem saveItem;
     private WavFile wavFile;
     
-    public Menus(Stage stage, OnMenuListener listener) {
+    public Menus(Stage stage, Scene scene, OnMenuListener listener) {
         super();
         
         this.listener = listener;
@@ -47,9 +49,8 @@ public class Menus extends MenuBar {
             fileMenu.getItems().addAll(separator, quitItem);
             
             openWavItem.setOnAction((ActionEvent actionEvent) -> {
-                openWavFile(stage);
+                openWavFile(stage, scene);
             });
-            
                         
             quitItem.setOnAction((ActionEvent actionEvent) -> {
                 System.exit(0);
@@ -88,7 +89,7 @@ public class Menus extends MenuBar {
         alert.showAndWait();
     }
     
-    private void openWavFile(Stage stage) {
+    private void openWavFile(Stage stage, Scene scene) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open ZX81 WAV File");
         fileChooser.getExtensionFilters().addAll(
@@ -97,8 +98,12 @@ public class Menus extends MenuBar {
         File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {
             System.out.println("Wav Selected: " + selectedFile.getAbsolutePath());
+            
+            scene.setCursor(Cursor.WAIT);
             wavFile = new WavFile(selectedFile);
-            listener.onWavLoaded(wavFile);
+            scene.setCursor(Cursor.DEFAULT);
+
+            listener.onWavLoaded(wavFile);            
         }
     }
     

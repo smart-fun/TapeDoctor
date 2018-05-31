@@ -240,75 +240,76 @@ public class WavImage extends Canvas {
             }
             //gc.stroke();
             gc.closePath();
-            
-            // display Bytes
-            if (displayZoom >= 0.99) {
-                gc.beginPath();
-                
-                ArrayList<WavFile.ByteInfo> bytes = wavFile.getBytes();
-                for(WavFile.ByteInfo byteInfo : bytes) {
-                    double leftOffset = byteInfo.offsetStart - offsetStart;
-                    double leftPixel = leftOffset * pixelsPerOffset;
-                    
-                    double rightOffset = byteInfo.offsetEnd - offsetStart;
-                    double rightPixel = rightOffset * pixelsPerOffset;
-                    
-                    double pixelWidth = rightPixel - leftPixel;
-                    if (leftPixel + pixelWidth <= 0) {
-                        continue;
-                    }
-                    if (leftPixel > screenWidth) {
-                        continue;
-                    }
-                    gc.setFill(new Color(1,1,0, 0.3));
-                    gc.fillRect(leftPixel, HalfHeight * 1.6, pixelWidth, HalfHeight*2);
-                    
-                    gc.setFill(Color.BLACK);
-                    gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-                    int printx = (int) (leftPixel + 20);
-                    do {
-                        gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
-                        printx += 400;
-                    } while (printx < rightPixel - 50);
-                }
-                
-                gc.closePath();
-            }
-            
-            // display bits
-            if (displayZoom >= 0.99) {
-                gc.beginPath();
-                
-                ArrayList<WavFile.BitInfo> bits = wavFile.getBits();
-                for(WavFile.BitInfo bitInfo : bits) {
-                    double leftOffset = bitInfo.offsetStart - offsetStart;
-                    double leftPixel = leftOffset * pixelsPerOffset;
-                    
-                    double rightOffset = bitInfo.offsetEnd - offsetStart;
-                    double rightPixel = rightOffset * pixelsPerOffset;
-                    
-                    double pixelWidth = rightPixel - leftPixel;
-                    if (leftPixel + pixelWidth <= 0) {
-                        continue;
-                    }
-                    if (leftPixel > screenWidth) {
-                        continue;
-                    }
-                    
-                    gc.setFill(new Color(0,0,1, 0.3));
-                    gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
-                    
-                    // display Bit value
-                    gc.setFill(Color.BLACK);
-                    gc.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-                    gc.fillText("" + bitInfo.value, leftPixel + 20, HalfHeight * 1.95);
-
-                }                
-                
-                gc.closePath();
-                
-            }            
         }
+            
+        // display Bytes
+        if (displayZoom >= 0.99) {
+            gc.beginPath();
+
+            ArrayList<WavFile.ByteInfo> bytes = wavFile.getBytes();
+            for(WavFile.ByteInfo byteInfo : bytes) {
+                double leftOffset = byteInfo.offsetStart - offsetStart;
+                double leftPixel = leftOffset * pixelsPerOffset;
+
+                double rightOffset = byteInfo.offsetEnd - offsetStart;
+                double rightPixel = rightOffset * pixelsPerOffset;
+
+                double pixelWidth = rightPixel - leftPixel;
+                if (leftPixel + pixelWidth <= 0) {
+                    continue;
+                }
+                if (leftPixel > screenWidth) {
+                    continue;
+                }
+                gc.setFill(new Color(1,1,0, 0.3));
+                gc.fillRect(leftPixel, HalfHeight * 1.6, pixelWidth, HalfHeight*2);
+
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                int printx = (int) (leftPixel + 20);
+                do {
+                    gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
+                    printx += 400;
+                } while (printx < rightPixel - 50);
+            }
+
+            gc.closePath();
+        }
+
+        // display bits
+        if (displayZoom >= 0.99) {
+            gc.beginPath();
+
+            ArrayList<WavFile.BitInfo> bits = wavFile.getBits();
+            for(WavFile.BitInfo bitInfo : bits) {
+                double leftOffset = bitInfo.offsetStart - offsetStart;
+                double leftPixel = leftOffset * pixelsPerOffset;
+
+                double rightOffset = bitInfo.offsetEnd - offsetStart;
+                double rightPixel = rightOffset * pixelsPerOffset;
+
+                double pixelWidth = rightPixel - leftPixel;
+                if (leftPixel + pixelWidth <= 0) {
+                    continue;
+                }
+                if (leftPixel > screenWidth) {
+                    continue;
+                }
+
+                gc.setFill(new Color(0,0,1, 0.3));
+                gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
+
+                // display Bit value
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+                gc.fillText("" + bitInfo.value, leftPixel + 20, HalfHeight * 1.95);
+
+            }                
+
+            gc.closePath();
+
+        }            
+
     }
     
 }

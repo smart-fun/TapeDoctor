@@ -274,11 +274,17 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             @Override
             public void handle(ActionEvent event) {
                 boolean removed = wavFile.applyForceBit(wavImage.getCurrentError());
-                if (removed) {
+                int numErrors = wavFile.getNumErrors();
+                if (numErrors > 0) {
+                    wavImage.jumpToCurrentError(wavFile.getMissingBits());
+                } else {
+                    wavImage.unselectCurrent();
+                }
+                /*if (removed) {
                     wavImage.unselectCurrent();
                 } else {
                     wavImage.jumpToCurrentError(wavFile.getMissingBits());
-                }
+                }*/
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
                 if (wavFile.getNumErrors() == 0) {
@@ -295,7 +301,13 @@ public class TapeDoctor extends Application implements Menus.OnMenuListener, Wav
             public void handle(ActionEvent event) {
                 int currentError = wavImage.getCurrentError();
                 wavFile.deleteMissingBitArea(currentError);
-                wavImage.unselectCurrent();
+                //wavImage.unselectCurrent();
+                int numErrors = wavFile.getNumErrors();
+                if (numErrors > 0) {
+                    wavImage.jumpToCurrentError(wavFile.getMissingBits());
+                } else {
+                    wavImage.unselectCurrent();
+                }
                 updateCurrentErrorData(wavFile);
                 wavImage.draw();
                 if (wavFile.getNumErrors() == 0) {

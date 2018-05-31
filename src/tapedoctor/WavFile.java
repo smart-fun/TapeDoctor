@@ -209,6 +209,13 @@ public class WavFile {
         builder.append(" Hz\n");
         builder.append(bitsPerSample);
         builder.append(" bits");
+        
+        String programName = getProgramName();
+        if (programName.length() > 0) {
+            builder.append("\n\nProgram: ");
+            builder.append(programName);
+        }
+        
         return builder.toString();
     }
     
@@ -629,6 +636,18 @@ public class WavFile {
                 return b1.offsetStart - b2.offsetStart;
             }            
         });
+    }
+    
+    public String getProgramName() {
+        String name = "";
+        for(ByteInfo byteInfo : byteArray) {
+            int zxchar = byteInfo.value;
+            name += ZX81CharSet.getAsciiChar(zxchar);
+            if (zxchar >= 128) {
+                break;
+            }
+        }
+        return name;
     }
     
 }

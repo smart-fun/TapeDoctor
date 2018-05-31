@@ -17,6 +17,10 @@ import javafx.scene.text.FontWeight;
 /**
  *
  * @author aguyon
+ * 
+ * First bytes are the name of the ZX-81 program (not ASCII) and last character has bit 7 forced.
+ * see https://en.wikipedia.org/wiki/ZX81_character_set
+ * 
  */
 public class WavImage extends Canvas {
     

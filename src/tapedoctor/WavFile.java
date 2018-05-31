@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class WavFile {
     
-    private static final double PEAK_THRESHOLD = 0.01;
+    private static final double PEAK_THRESHOLD = 0.02;
     private static final double WAVE_AMPLITUDE = 0.8;
     private static final double BAUDS = 400;
     

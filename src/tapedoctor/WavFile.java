@@ -28,7 +28,8 @@ public class WavFile {
     
     private static final double PEAK_THRESHOLD = 0.02;
     private static final double WAVE_AMPLITUDE = 0.8;
-    private static final double BAUDS = 400;
+    private static final double BAUDS_0 = 400;
+    private static final double BAUDS_1 = 250;
     
     private byte[] fileBuffer;
     private File file;
@@ -517,7 +518,7 @@ public class WavFile {
     
     public boolean save(File file) {
         
-        if (byteArray.size() == 0) {
+        if (byteArray.isEmpty()) {
             return false;
         }
         
@@ -549,10 +550,10 @@ public class WavFile {
     }
     
     public double get0bitSize() {
-        return peakPeriod * (53 / 7.0);
+        return peakPeriod * (110.25 / 14.0); // 110.25 = 44100/400 bauds, 14 = peak period for 44100Khz
     }
     public double get1bitSize() {
-        return peakPeriod * (88 / 7.0);
+        return peakPeriod * (176.4 / 14.0); // 176.5 = 44100/250 bauds, 14 = peak period for 44100Khz
     }
 
     private void guessMissingBits() {
@@ -620,10 +621,20 @@ public class WavFile {
                     missingBit.forcedValues.clear();
                     missingBit.offsetStart = (int) endOffset;   // seems a bit too far
                     
-                    double sizeLimit = peakPeriod * 2.5;
+                    double sizeLimit = peakPeriod * 1.5;
                     if (missingBit.offsetEnd - missingBit.offsetStart < sizeLimit) {
-                        missingBits.remove(missingBitIndex);
-                        removed = true;
+                        // AND not remining peaks here
+                        boolean noPeaks = true;
+                        for(int peakIndex=missingBit.offsetStart; peakIndex < missingBit.offsetEnd; ++peakIndex) {
+                            if (hiPeaks.contains(peakIndex)) {
+                                noPeaks = false;
+                                break;
+                            }
+                        }
+                        if (noPeaks) {
+                            missingBits.remove(missingBitIndex);
+                            removed = true;
+                        }
                     }
                     
                 }

@@ -13,12 +13,13 @@ So far the only supported machine is the Sinclair ZX81, but maybe I'll add other
 
 ## Menus
 
-![alt text](pictures/menu_file.png?raw=true "Menu File")
+### File Menu
 
 - **Open WAV** opens a program previously recorded in WAV format
-- **Save ZX81 .P** saves the program into .p format so that it can be read by emulators. The entry is greyed until a WAV is correctly loaded.
+- **Save ZX81 .P** saves the program into .p format so that it can be read by emulators. The entry is greyed until a WAV is correctly loaded and all errors are resolved.
+- **Quit** exits TapeDoctor
 
-![alt text](pictures/menu_help.png?raw=true "Menu Help")
+### Help Menu
 
 - **About** displays information about TapeDoctor
 
@@ -33,6 +34,9 @@ If no error occurred, the WAV is displayed.
 
 ![alt text](pictures/no_error.png?raw=true "No Error")
 
+The **Purple Zones** represent the **Bits** recognized (0 or 1). On the tape, 4 consecutive peaks represent a 0, and 9 consecutive peaks represent a 1.
+
+The **Yellow Zones** represent the **Bytes** recognized (8 grouped bits). Values vary from 0 to 255.
 
 ## Saving the .p program
 
@@ -43,15 +47,19 @@ Select **Save ZX81 .P** from the File Menu, give it a name, and validate. That's
 
 When errors occur during signal analysis, some information and controllers appear. The **Red Zone** is the **Error Zone**. It is possible to go the previous or next error using the **<<** and **>>** buttons.
 
-The **Purple Zones** represent the **Bits** recognized (0 or 1).
-
-The **Yellow Zones** represent the **Bytes** recognized (8 consecutive recognized bits). Values vary from 0 to 255 (decimal).
 
 ![alt text](pictures/errors.png?raw=true "Errors")
 
-When an Error is selected, you have the possiblity to force the value of the Bits by yourself. You have to click on "Set 0 bit" or "Set 1 bit" to change the value. Note that a 0 is encoded with 4 peaks, and a 1 is encoded with 9 peaks. When choosing 0 or 1, the bottom part of the zone gets colored in green. If you are happy with the value, click on "Apply bit set". The bit will be taken into account and you will be able to set the value for the next bit or the error. When all bits are set for an Error, you can go to the next error using >>. If there is a Red small area remaining, you can delete it using "DELETE". Be careful to not use DELETE if there are still some missing bits in the Red area!
+When an Error is selected, you have the possiblity to force the value of the Bits by yourself. You have to click on "Set 0 bit" or "Set 1 bit" to change the value. Note that a 0 is encoded with 4 peaks, and a 1 is encoded with 9 peaks. When choosing 0 or 1, the bottom part of the zone gets colored in green.
 
 ![alt text](pictures/force_bit.png?raw=true "Force Bit value")
+
+If you are happy with the value, click on "Apply bit set". The bit will be taken into account and you will be able to set the value for the next bit or the next error.
+
+![alt text](pictures/resolved.png?raw=true "Resolved")
+
+When all bits are set for an Error, you can go to the next error using >>. If there is a Red small area remaining, you can delete it using "DELETE". Be careful to not use DELETE if there are still some missing bits in the Red area!
+
 
 Once all errors are fixed, you can save the program.
 

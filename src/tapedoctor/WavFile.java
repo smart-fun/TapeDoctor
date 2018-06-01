@@ -327,14 +327,23 @@ public class WavFile {
             } else {
                 
                 double previousSize = (previous.value == 0) ? get0bitSize() : get1bitSize();
-                int endOfPrevious = (int) (previous.offsetStart + previousSize);
-                int startOfNext = bitInfo.offsetStart - peakPeriod;                
+                final int endOfPrevious = (int) (previous.offsetStart + previousSize);
+                final int startOfNext = bitInfo.offsetStart - peakPeriod;                
                 int space = startOfNext - endOfPrevious;
-                if (space >= peakPeriod * 3) {
+                if (space >= peakPeriod * 3) {  // TODO: reduce to maybe 2 or 2.5
                     ++numErrors;
-                    System.out.println("Missing 1 bit after position: " + endOfPrevious);
+                    System.out.println("Missing bits after position: " + endOfPrevious);
                     MissingBitInfo missingBit = new MissingBitInfo(endOfPrevious, startOfNext);
                     missingBits.add(missingBit);
+                } else {    // are there some peaks between bits?
+                    for(int peakIndex=endOfPrevious; peakIndex<startOfNext; ++peakIndex) {
+                        if (this.hiPeaks.contains(peakIndex)) {
+                            System.out.println("Orphan peaks after position: " + endOfPrevious);
+                            MissingBitInfo missingBit = new MissingBitInfo(endOfPrevious, startOfNext);
+                            missingBits.add(missingBit);
+                            break;
+                        }
+                    }
                 }
                 previous = bitInfo;
             }
@@ -621,6 +630,7 @@ public class WavFile {
                 findBytes();    // Re-calculate bytes
             }
         }
+        guessMissingBits();
         return removed;
     }
     

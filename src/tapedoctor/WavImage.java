@@ -26,6 +26,7 @@ public class WavImage extends Canvas {
     
     private static final Color RED_TRANSP = new Color(1,0,0, 0.3);
     private static final Color GREEN_TRANSP = new Color(0,1,0, 0.3);
+    private static final Color PURPLE_TRANSP = new Color(0,0,1, 0.1);
     
     private WavFile wavFile;
     private double displayOffset = 0;
@@ -191,6 +192,7 @@ public class WavImage extends Canvas {
         double HalfHeight = getHeight() / 2;
         double offsetStart = displayOffset;
         double offsetEnd = offsetStart + screenWidth;
+        double peakPeriod = wavFile.getPeakPeriod();
         
         if (missingBits.size() > 0) {
             gc.beginPath(); 
@@ -220,13 +222,14 @@ public class WavImage extends Canvas {
 
                 if (info.forcedValues.isEmpty()) {
                     gc.setFill(RED_TRANSP);
-                    gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight*2);    // Red on all height
+                    gc.fillRect(leftPixel, 0, pixelWidth, HalfHeight*2);    // Red on all height
                 } else {
                     gc.setFill(RED_TRANSP);
-                    gc.fillRect(leftPixel-1, 0, pixelWidth+2, HalfHeight);      // Red on half height
+                    gc.fillRect(leftPixel, 0, pixelWidth, HalfHeight);      // Red on half height
 
                     for(Integer bitValue : info.forcedValues) {
-                        double bitSize = (bitValue == 0) ? wavFile.get0bitSize() : wavFile.get1bitSize();
+                        double bitSize = (bitValue == 0) ? wavFile.getPeakPeriod() * 4 : wavFile.getPeakPeriod() * 9;
+                        //double bitSize = (bitValue == 0) ? wavFile.get0bitSize() : wavFile.get1bitSize();
                         rightOffset = leftOffset + bitSize;
                         rightPixel = rightOffset;
                         pixelWidth = rightPixel - leftPixel;
@@ -236,7 +239,7 @@ public class WavImage extends Canvas {
                         gc.fillText("Forced to " + value, leftPixel + 20, HalfHeight * 1.2);
 
                         gc.setFill(GREEN_TRANSP);
-                        gc.fillRect(leftPixel-1, HalfHeight, pixelWidth+2, HalfHeight);
+                        gc.fillRect(leftPixel, HalfHeight, pixelWidth, HalfHeight);
 
                         leftOffset = rightOffset;
                     }
@@ -253,10 +256,10 @@ public class WavImage extends Canvas {
 
         ArrayList<WavFile.ByteInfo> bytes = wavFile.getBytes();
         for(WavFile.ByteInfo byteInfo : bytes) {
-            double leftOffset = byteInfo.offsetStart - offsetStart;
+            double leftOffset = byteInfo.offsetStart - offsetStart - (peakPeriod*2);
             double leftPixel = leftOffset;
 
-            double rightOffset = byteInfo.offsetEnd - offsetStart;
+            double rightOffset = byteInfo.offsetEnd - offsetStart - peakPeriod;
             double rightPixel = rightOffset;
 
             double pixelWidth = rightPixel - leftPixel;
@@ -272,10 +275,13 @@ public class WavImage extends Canvas {
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
             int printx = (int) (leftPixel + 20);
-            do {
+            gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
+            printx = (int) (rightPixel - 30);
+            gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
+            /*do {
                 gc.fillText("" + byteInfo.value, printx, HalfHeight * 1.75);
-                printx += 400;
-            } while (printx < rightPixel - 50);
+                printx += 500;
+            } while (printx < rightPixel - 50);*/
         }
 
         gc.closePath();
@@ -285,10 +291,10 @@ public class WavImage extends Canvas {
 
         ArrayList<WavFile.BitInfo> bits = wavFile.getBits();
         for(WavFile.BitInfo bitInfo : bits) {
-            double leftOffset = bitInfo.offsetStart - offsetStart;
+            double leftOffset = bitInfo.offsetStart - (peakPeriod / 2) - offsetStart;
             double leftPixel = leftOffset;
 
-            double rightOffset = bitInfo.offsetEnd - offsetStart;
+            double rightOffset = leftOffset + bitInfo.getShortLength();   //bitInfo.offsetEnd - offsetStart;
             double rightPixel = rightOffset;
 
             double pixelWidth = rightPixel - leftPixel;
@@ -299,13 +305,14 @@ public class WavImage extends Canvas {
                 continue;
             }
 
-            gc.setFill(new Color(0,0,1, 0.3));
-            gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
+            gc.setFill(PURPLE_TRANSP);
+//            gc.fillRect(leftPixel, HalfHeight * 1.8, pixelWidth, HalfHeight*2); 
+            gc.fillRect(leftPixel, 0, pixelWidth, HalfHeight*2); 
 
             // display Bit value
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
-            gc.fillText("" + bitInfo.value, leftPixel + 20, HalfHeight * 1.95);
+            gc.fillText("" + bitInfo.value, (leftPixel + rightPixel) / 2 - 5, HalfHeight * 1.95);
 
         }                
 

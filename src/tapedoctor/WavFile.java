@@ -54,7 +54,7 @@ public class WavFile {
     private double maxPeak = 0;
     private static int peakPeriod = 7;
     
-    public static class BitInfo {
+    public class BitInfo {
         int offsetStart;
         int offsetEnd;
         int value;
@@ -66,6 +66,9 @@ public class WavFile {
             } else {
                 offsetEnd = offsetStart + (peakPeriod * 11); // 9 peaks + blank
             }
+        }
+        public int getShortLength() {
+            return (value == 0) ? peakPeriod * 4 : peakPeriod * 9;
         }
     }
     private ArrayList<BitInfo> bitsArray = new ArrayList<>(16384 * 8);  // 16K default
@@ -98,7 +101,7 @@ public class WavFile {
         }
     }
     
-    public static class ByteInfo {
+    public class ByteInfo {
         int offsetStart;
         int offsetEnd;  // start of last bit
         int value;
@@ -107,6 +110,17 @@ public class WavFile {
             this.offsetEnd = offsetEnd;
             this.value = value;
         }
+        /*public int getWidth() {
+            int result = 0;
+            for(int i=0; i<8 ;++i) {
+                if (((value >> i) & 1) == 0) {
+                    result += get0bitSize();
+                } else {
+                    result += get1bitSize();
+                }
+            }
+            return result;
+        }*/
     }
     private ArrayList<ByteInfo> byteArray = new ArrayList<>(16384);  // 16K default
     public ArrayList<ByteInfo> getBytes() {
@@ -189,6 +203,10 @@ public class WavFile {
     
     public int getNumErrors() {
         return missingBits.size();
+    }
+    
+    public int getPeakPeriod() {
+        return peakPeriod;
     }
     
     public boolean isHighPeak(int position) {

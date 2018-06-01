@@ -4,12 +4,17 @@ TapeDoctor is a Java project and a Jar Tool that converts old computers programs
 
 In the past computer programs where recorded on tapes. Most of them can't be read anymore because the tapes degrade with time. 
 
-Maybe it's not to late to save these programs!
+But maybe it's not too late to save your programs from tapes!
 
 Record your old tapes and save them in WAV format, and then use TapeDoctor to recover the data and save it for the emulators.
 
 So far the only supported machine is the Sinclair ZX81, but maybe I'll add other machines later.
 
+
+## Install & Run TapeDoctor
+
+- the easy solution is to download dist/TapeDoctor.jar file, and to double click on it. You'll have to have Java JRE installed.
+- the hard way is to clone the project and open it from NetBeans (available for free on Mac, Windows, Linux)
 
 ## Menus
 
@@ -45,7 +50,7 @@ Select **Save ZX81 .P** from the File Menu, give it a name, and validate. That's
 
 ## Handling errors
 
-When errors occur during signal analysis, some information and controllers appear. The **Red Zone** is the **Error Zone**. It is possible to go the previous or next error using the **<<** and **>>** buttons.
+When errors occur during analysis, some additional information and controllers appear. The **Red Zone** is the **Error Zone**. It is possible to go the previous or next error using the **<<** and **>>** buttons.
 
 
 ![alt text](pictures/errors.png?raw=true "Errors")
